@@ -1,3 +1,7 @@
+/*
+ * Referenced by http://www.adamrocker.com/blog/288/bug-report-system-for-android.html
+ */
+
 package com.uraroji.garage.android.ladiotail.bugreport;
 
 import java.io.BufferedReader;
