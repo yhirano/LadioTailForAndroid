@@ -1,6 +1,7 @@
 # LadioTailForAndroid
 
-Ladio TailはAndroid用のねとらじ視聴ソフトウェアです。
+Ladio TailはAndroid用の [livedoor ねとらじ](http://ladio.net/) 視聴ソフトウェアです。
+
 Android端末からねとらじを視聴することができます。
 
 ## 主な機能
