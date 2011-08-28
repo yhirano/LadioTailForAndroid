@@ -1,4 +1,4 @@
-# NetLadioLibForAndroid
+# LadioTailForAndroid
 
 Ladio TailはAndroid用のねとらじ視聴ソフトウェアです。
 Android端末からねとらじを視聴することができます。
