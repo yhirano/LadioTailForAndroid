@@ -151,21 +151,21 @@ public class ChannelActivity extends Activity {
 		});
 		switchPlayStopButtonText();
 		// 再生対象が存在しない場合はボタンを無効にする
-		if (((Channel) mChannel).getPlayUrl() == null) {
+		if (mChannel.getPlayUrl() == null) {
 			mPlayStopImageButton.setEnabled(false);
 			mPlayStopImageButton.setVisibility(View.INVISIBLE);
 		}
 
 		// Siteボタン
 		ImageButton siteImageButton = (ImageButton) findViewById(R.id.SiteImageButton);
-		if (((Channel) mChannel).getUrl() == null) {
+		if (mChannel.getUrl() == null) {
 			siteImageButton.setEnabled(false);
 			siteImageButton.setVisibility(View.INVISIBLE);
 		}
 		siteImageButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Uri uri = Uri.parse(((Channel) mChannel).getUrl().toString());
+				Uri uri = Uri.parse(mChannel.getUrl().toString());
 				Intent i = new Intent(Intent.ACTION_VIEW, uri);
 				startActivity(i);
 			}

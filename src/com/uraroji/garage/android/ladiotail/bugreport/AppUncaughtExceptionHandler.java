@@ -49,6 +49,7 @@ public class AppUncaughtExceptionHandler implements UncaughtExceptionHandler {
 		mDefaultUEH = Thread.getDefaultUncaughtExceptionHandler();
 	}
 	
+	@Override
 	public void uncaughtException(Thread th, Throwable t) {
 		try {
 			saveState(t);
@@ -89,10 +90,12 @@ public class AppUncaughtExceptionHandler implements UncaughtExceptionHandler {
 				}
 			});
 			builder.setNegativeButton(R.string.cancel, new OnClickListener(){
+				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					finish(dialog);
 				}});
 			builder.setPositiveButton(R.string.post, new OnClickListener(){
+				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					postBugReportInBackground();// バグ報告
 					dialog.dismiss();
@@ -104,6 +107,7 @@ public class AppUncaughtExceptionHandler implements UncaughtExceptionHandler {
 	
 	private static void postBugReportInBackground() {
 		new Thread(new Runnable(){
+			@Override
 			public void run() {
 				postBugReport();
 				deleteBugReport();

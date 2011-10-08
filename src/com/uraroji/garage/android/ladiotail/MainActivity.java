@@ -472,6 +472,7 @@ public class MainActivity extends TabActivity {
 			 */
 			private final static int MSG_FAILED_FETCH_HEADLINE = 1;
 
+			@Override
 			public void run() {
 				try {
 					HeadlineManager.getHeadline().fecthHeadline();
