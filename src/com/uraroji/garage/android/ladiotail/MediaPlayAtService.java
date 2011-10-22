@@ -81,10 +81,15 @@ public class MediaPlayAtService implements MediaPlayInterface {
 		}
 
 		try {
-			mMediaPlayServiceInterface.play(path, notificationTitle,
-					notificationContent);
+			if (mMediaPlayServiceInterface != null) {
+				mMediaPlayServiceInterface.play(path, notificationTitle,
+						notificationContent);
+			} else {
+				Log.w(C.TAG, "Service interface is NULL in play.");
+				notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+			}
 		} catch (RemoteException e) {
-			Log.w(C.TAG, "Occurd RemoteException(" + e.toString() + ").");
+			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in play.");
 			notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
 		}
 	}
@@ -96,9 +101,14 @@ public class MediaPlayAtService implements MediaPlayInterface {
 		}
 
 		try {
-			mMediaPlayServiceInterface.stop();
+			if (mMediaPlayServiceInterface != null) {
+				mMediaPlayServiceInterface.stop();
+			} else {
+				Log.w(C.TAG, "Service interface is NULL in stop.");
+				notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+			}
 		} catch (RemoteException e) {
-			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred.");
+			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in stop.");
 			notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
 		}
 	}
@@ -122,9 +132,15 @@ public class MediaPlayAtService implements MediaPlayInterface {
 	@Override
 	public String getPlayingPath() {
 		try {
-			return mMediaPlayServiceInterface.getPlayingPath();
+			if (mMediaPlayServiceInterface != null) {
+				return mMediaPlayServiceInterface.getPlayingPath();
+			} else {
+				Log.w(C.TAG, "Service interface is NULL in getPlayingPath.");
+				// どうしようもないのでとりあえずnullを返す
+				return null;
+			}
 		} catch (RemoteException e) {
-			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred.");
+			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in getPlayingPath.");
 			// どうしようもないのでとりあえずnullを返す
 			return null;
 		}
@@ -133,9 +149,15 @@ public class MediaPlayAtService implements MediaPlayInterface {
 	@Override
 	public boolean isPlaying() {
 		try {
-			return mMediaPlayServiceInterface.isPlaying();
+			if (mMediaPlayServiceInterface != null) {
+				return mMediaPlayServiceInterface.isPlaying();
+			} else {
+				Log.w(C.TAG, "Service interface is NULL in isPlaying.");
+				// どうしようもないのでとりあえずnullを返す
+				return false;
+			}
 		} catch (RemoteException e) {
-			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred.");
+			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in isPlaying.");
 			// どうしようもないのでとりあえずfalseを返す
 			return false;
 		}
