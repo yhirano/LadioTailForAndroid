@@ -22,8 +22,6 @@
 
 package com.uraroji.garage.android.ladiotail;
 
-import java.util.ArrayList;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -33,235 +31,235 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 /**
  * サービスでのメディア再生
  */
 public class MediaPlayAtService implements MediaPlayInterface {
 
-	/**
-	 * MediaPlayServiceへのインターフェース
-	 */
-	private MediaPlayServiceInterface mMediaPlayServiceInterface;
+    /**
+     * MediaPlayServiceへのインターフェース
+     */
+    private MediaPlayServiceInterface mMediaPlayServiceInterface;
 
-	/**
-	 * コンテキスト
-	 */
-	private Context mContext;
+    /**
+     * コンテキスト
+     */
+    private Context mContext;
 
-	/**
-	 * 再生状態が変わった際のハンドラーリスト
-	 * 
-	 * @see MediaPlayManager#MSG_PLAY_STARTED
-	 * @see MediaPlayManager#MSG_PLAY_COMPLATED
-	 * @see MediaPlayManager#MSG_PLAY_STOPPED
-	 * @see MediaPlayManager#MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START
-	 */
-	private ArrayList<Handler> mPlayStateChangedHandlerist = new ArrayList<Handler>();
+    /**
+     * 再生状態が変わった際のハンドラーリスト
+     * 
+     * @see MediaPlayManager#MSG_PLAY_STARTED
+     * @see MediaPlayManager#MSG_PLAY_COMPLATED
+     * @see MediaPlayManager#MSG_PLAY_STOPPED
+     * @see MediaPlayManager#MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START
+     */
+    private ArrayList<Handler> mPlayStateChangedHandlerist = new ArrayList<Handler>();
 
-	/**
-	 * mPlayStateChangedHandleristのロックオブジェクト
-	 */
-	private final Object mPlayStateChangedHandleristLock = new Object();
+    /**
+     * mPlayStateChangedHandleristのロックオブジェクト
+     */
+    private final Object mPlayStateChangedHandleristLock = new Object();
 
-	@Override
-	public void init(Context context) {
-		this.mContext = context;
+    @Override
+    public void init(Context context) {
+        this.mContext = context;
 
-		Intent intent = new Intent(MediaPlayServiceInterface.class.getName());
-		context.startService(intent); // MeidaPlayサービス開始
-		context.bindService(intent, mMediaPlayServiceConn,
-				Context.BIND_AUTO_CREATE);
-	}
+        Intent intent = new Intent(MediaPlayServiceInterface.class.getName());
+        context.startService(intent); // MeidaPlayサービス開始
+        context.bindService(intent, mMediaPlayServiceConn,
+                Context.BIND_AUTO_CREATE);
+    }
 
-	@Override
-	public void play(String path, String notificationTitle,
-			String notificationContent) {
-		if (C.LOCAL_LOG) {
-			Log.v(C.TAG, "Trying to play " + path + ".");
-		}
+    @Override
+    public void play(String path, String notificationTitle,
+            String notificationContent) {
+        if (C.LOCAL_LOG) {
+            Log.v(C.TAG, "Trying to play " + path + ".");
+        }
 
-		try {
-			if (mMediaPlayServiceInterface != null) {
-				mMediaPlayServiceInterface.play(path, notificationTitle,
-						notificationContent);
-			} else {
-				Log.w(C.TAG, "Service interface is NULL in play.");
-				notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
-			}
-		} catch (RemoteException e) {
-			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in play.");
-			notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
-		}
-	}
+        try {
+            if (mMediaPlayServiceInterface != null) {
+                mMediaPlayServiceInterface.play(path, notificationTitle,
+                        notificationContent);
+            } else {
+                Log.w(C.TAG, "Service interface is NULL in play.");
+                notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+            }
+        } catch (RemoteException e) {
+            Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in play.");
+            notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+        }
+    }
 
-	@Override
-	public void stop() {
-		if (C.LOCAL_LOG) {
-			Log.v(C.TAG, "Trying to stop playing.");
-		}
+    @Override
+    public void stop() {
+        if (C.LOCAL_LOG) {
+            Log.v(C.TAG, "Trying to stop playing.");
+        }
 
-		try {
-			if (mMediaPlayServiceInterface != null) {
-				mMediaPlayServiceInterface.stop();
-			} else {
-				Log.w(C.TAG, "Service interface is NULL in stop.");
-				notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
-			}
-		} catch (RemoteException e) {
-			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in stop.");
-			notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
-		}
-	}
+        try {
+            if (mMediaPlayServiceInterface != null) {
+                mMediaPlayServiceInterface.stop();
+            } else {
+                Log.w(C.TAG, "Service interface is NULL in stop.");
+                notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+            }
+        } catch (RemoteException e) {
+            Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in stop.");
+            notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+        }
+    }
 
-	@Override
-	public void release() {
-		if (C.LOCAL_LOG) {
-			Log.v(C.TAG, "Release MediaPlay resouce.");
-		}
+    @Override
+    public void release() {
+        if (C.LOCAL_LOG) {
+            Log.v(C.TAG, "Release MediaPlay resouce.");
+        }
 
-		boolean isPlayed = isPlaying();
+        boolean isPlayed = isPlaying();
 
-		mContext.unbindService(mMediaPlayServiceConn);
-		// 再生中で無い場合はサービスを止める
-		if (isPlayed == false) {
-			mContext.stopService(new Intent(MediaPlayServiceInterface.class
-					.getName()));
-		}
-	}
+        mContext.unbindService(mMediaPlayServiceConn);
+        // 再生中で無い場合はサービスを止める
+        if (isPlayed == false) {
+            mContext.stopService(new Intent(MediaPlayServiceInterface.class
+                    .getName()));
+        }
+    }
 
-	@Override
-	public String getPlayingPath() {
-		try {
-			if (mMediaPlayServiceInterface != null) {
-				return mMediaPlayServiceInterface.getPlayingPath();
-			} else {
-				Log.w(C.TAG, "Service interface is NULL in getPlayingPath.");
-				// どうしようもないのでとりあえずnullを返す
-				return null;
-			}
-		} catch (RemoteException e) {
-			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in getPlayingPath.");
-			// どうしようもないのでとりあえずnullを返す
-			return null;
-		}
-	}
+    @Override
+    public String getPlayingPath() {
+        try {
+            if (mMediaPlayServiceInterface != null) {
+                return mMediaPlayServiceInterface.getPlayingPath();
+            } else {
+                Log.w(C.TAG, "Service interface is NULL in getPlayingPath.");
+                // どうしようもないのでとりあえずnullを返す
+                return null;
+            }
+        } catch (RemoteException e) {
+            Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in getPlayingPath.");
+            // どうしようもないのでとりあえずnullを返す
+            return null;
+        }
+    }
 
-	@Override
-	public boolean isPlaying() {
-		try {
-			if (mMediaPlayServiceInterface != null) {
-				return mMediaPlayServiceInterface.isPlaying();
-			} else {
-				Log.w(C.TAG, "Service interface is NULL in isPlaying.");
-				// どうしようもないのでとりあえずnullを返す
-				return false;
-			}
-		} catch (RemoteException e) {
-			Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in isPlaying.");
-			// どうしようもないのでとりあえずfalseを返す
-			return false;
-		}
-	}
+    @Override
+    public boolean isPlaying() {
+        try {
+            if (mMediaPlayServiceInterface != null) {
+                return mMediaPlayServiceInterface.isPlaying();
+            } else {
+                Log.w(C.TAG, "Service interface is NULL in isPlaying.");
+                // どうしようもないのでとりあえずnullを返す
+                return false;
+            }
+        } catch (RemoteException e) {
+            Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in isPlaying.");
+            // どうしようもないのでとりあえずfalseを返す
+            return false;
+        }
+    }
 
-	@Override
-	public void addPlayStateChangedHandler(Handler handler) {
-		synchronized (mPlayStateChangedHandleristLock) {
-			if (handler != null) {
-				mPlayStateChangedHandlerist.add(handler);
-			}
-		}
-	}
+    @Override
+    public void addPlayStateChangedHandler(Handler handler) {
+        synchronized (mPlayStateChangedHandleristLock) {
+            if (handler != null) {
+                mPlayStateChangedHandlerist.add(handler);
+            }
+        }
+    }
 
-	@Override
-	public void removePlayStateChangedHandler(Handler handler) {
-		synchronized (mPlayStateChangedHandleristLock) {
-			mPlayStateChangedHandlerist.remove(handler);
-		}
-	}
+    @Override
+    public void removePlayStateChangedHandler(Handler handler) {
+        synchronized (mPlayStateChangedHandleristLock) {
+            mPlayStateChangedHandlerist.remove(handler);
+        }
+    }
 
-	/**
-	 * 登録されたハンドラにメッセージを送信する
-	 * 
-	 * @param what
-	 */
-	private void notifyPlayStateChanged(int what) {
-		for (Handler h : getPlayStateChangedHandleristClone()) {
-			if (h != null) {
-				h.sendEmptyMessage(what);
-			}
-		}
-	}
+    /**
+     * 登録されたハンドラにメッセージを送信する
+     * 
+     * @param what
+     */
+    private void notifyPlayStateChanged(int what) {
+        for (Handler h : getPlayStateChangedHandleristClone()) {
+            if (h != null) {
+                h.sendEmptyMessage(what);
+            }
+        }
+    }
 
-	/**
-	 * 再生状態が変わった際のハンドラーリストのクローンしたリストを取得する。
-	 * 
-	 * 浅いクローンなので注意。
-	 * 
-	 * @return 再生状態が変わった際のハンドラーリストのクローンしたリスト
-	 */
-	@SuppressWarnings("unchecked")
-	private ArrayList<Handler> getPlayStateChangedHandleristClone() {
-		synchronized (mPlayStateChangedHandleristLock) {
-			return (ArrayList<Handler>) mPlayStateChangedHandlerist.clone();
-		}
-	}
+    /**
+     * 再生状態が変わった際のハンドラーリストのクローンしたリストを取得する。 浅いクローンなので注意。
+     * 
+     * @return 再生状態が変わった際のハンドラーリストのクローンしたリスト
+     */
+    @SuppressWarnings("unchecked")
+    private ArrayList<Handler> getPlayStateChangedHandleristClone() {
+        synchronized (mPlayStateChangedHandleristLock) {
+            return (ArrayList<Handler>) mPlayStateChangedHandlerist.clone();
+        }
+    }
 
-	/**
-	 * 再生サービスからのコールバック
-	 */
-	PlayStateChangedCallbackInterface remoteCallback = new PlayStateChangedCallbackInterface.Stub() {
-		@Override
-		public void changed(int changedState) throws RemoteException {
-			switch (changedState) {
-			case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED:
-				notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED);
-				break;
-			case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED:
-				notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED);
-				break;
-			case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED:
-				notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED);
-				break;
-			case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START:
-				notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
-				break;
-			default:
-				Log.w(C.TAG,
-						"Unknown PlayStateChangedCallbackInterface changedState("
-								+ changedState + ")");
-				break;
-			}
-		}
-	};
+    /**
+     * 再生サービスからのコールバック
+     */
+    PlayStateChangedCallbackInterface remoteCallback = new PlayStateChangedCallbackInterface.Stub() {
+        @Override
+        public void changed(int changedState) throws RemoteException {
+            switch (changedState) {
+                case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED:
+                    notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED);
+                    break;
+                case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED:
+                    notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED);
+                    break;
+                case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED:
+                    notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED);
+                    break;
+                case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START:
+                    notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+                    break;
+                default:
+                    Log.w(C.TAG,
+                            "Unknown PlayStateChangedCallbackInterface changedState("
+                                    + changedState + ")");
+                    break;
+            }
+        }
+    };
 
-	/**
-	 * サービスへのコネクション
-	 */
-	private ServiceConnection mMediaPlayServiceConn = new ServiceConnection() {
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			// サービスIFを取得する
-			mMediaPlayServiceInterface = MediaPlayServiceInterface.Stub
-					.asInterface(service);
-			try {
-				mMediaPlayServiceInterface
-						.registerPlayStateChangedCallback(remoteCallback);
-			} catch (RemoteException e) {
-				// 例外はどうしようもないので無視しておく
-				Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred.");
-			}
-		}
+    /**
+     * サービスへのコネクション
+     */
+    private ServiceConnection mMediaPlayServiceConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // サービスIFを取得する
+            mMediaPlayServiceInterface = MediaPlayServiceInterface.Stub
+                    .asInterface(service);
+            try {
+                mMediaPlayServiceInterface
+                        .registerPlayStateChangedCallback(remoteCallback);
+            } catch (RemoteException e) {
+                // 例外はどうしようもないので無視しておく
+                Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred.");
+            }
+        }
 
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			try {
-				mMediaPlayServiceInterface
-						.unregisterPlayStateChangedCallback(remoteCallback);
-			} catch (RemoteException e) {
-				// 例外はどうしようもないので無視しておく
-				Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred.");
-			}
-			mMediaPlayServiceInterface = null;
-		}
-	};
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            try {
+                mMediaPlayServiceInterface
+                        .unregisterPlayStateChangedCallback(remoteCallback);
+            } catch (RemoteException e) {
+                // 例外はどうしようもないので無視しておく
+                Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred.");
+            }
+            mMediaPlayServiceInterface = null;
+        }
+    };
 }

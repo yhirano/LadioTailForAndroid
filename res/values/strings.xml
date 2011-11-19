@@ -1,41 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    
-    <string name="app_name">Ladio Tail</string>
-<string name="ok">OK</string>
-<string name="failed_play_message">再生できませんでした</string>
-<string name="back">Back</string>
-<string name="stop">Stop</string>
-<string name="play">Play</string>
-<string name="site">Site</string>
-<string name="reload">Reload</string>
-<string name="now_loading">Now Loading...</string>
-<string name="genre">Genre</string>
-<string name="description">Description</string>
-<string name="song">Song</string>
-<string name="listeners">Listeners</string>
-<string name="total_listener">Total listeners</string>
-<string name="max_listeners">Max listeners</string>
-<string name="bitrate">Bitrate</string>
-<string name="sampling_rate">Sampling rate</string>
-<string name="channel">Channel</string>
-<string name="airtime">at</string>
-<string name="format">Format</string>
-<string name="mono">Mono</string>
-<string name="stereo">Stereo</string>
-<string name="failed_fetch_headline">番組情報が取得できませんでした</string>
-<string name="preparing">Preparing...</string>
 
-<color name="channel_info_buttons_background">#5F5F5F</color>
-<color name="playing_text">#CC0000</color>
-<string name="unknown">Unknown</string>
-<string name="search">Search</string>
-<string name="voice">Voice</string>
-<string name="title">Title</string>
-<string name="newly">Newly</string>
-<string name="dj">DJ</string>
-<string name="not_supported_voice_recognize">この端末は音声入力に対応していません</string>
-<string name="cancel">Cancel</string>
-<string name="send_bugreport">前回の起動中に予期しないエラーが発生しました。開発元にエラー情報を送信しますか？ プライバシーに関わる情報は送信しません。</string>
-<string name="post">Post</string>
+    <string name="app_name">Ladio Tail</string>
+    <string name="ok">OK</string>
+    <string name="failed_play_message">再生できませんでした</string>
+    <string name="back">Back</string>
+    <string name="stop">Stop</string>
+    <string name="play">Play</string>
+    <string name="site">Site</string>
+    <string name="reload">Reload</string>
+    <string name="now_loading">Now Loading...</string>
+    <string name="genre">Genre</string>
+    <string name="description">Description</string>
+    <string name="song">Song</string>
+    <string name="listeners">Listeners</string>
+    <string name="total_listener">Total listeners</string>
+    <string name="max_listeners">Max listeners</string>
+    <string name="bitrate">Bitrate</string>
+    <string name="sampling_rate">Sampling rate</string>
+    <string name="channel">Channel</string>
+    <string name="airtime">at</string>
+    <string name="format">Format</string>
+    <string name="mono">Mono</string>
+    <string name="stereo">Stereo</string>
+    <string name="failed_fetch_headline">番組情報が取得できませんでした</string>
+    <string name="preparing">Preparing...</string>
+
+    <color name="channel_info_buttons_background">#5F5F5F</color>
+    <color name="playing_text">#CC0000</color>
+
+    <string name="unknown">Unknown</string>
+    <string name="search">Search</string>
+    <string name="voice">Voice</string>
+    <string name="title">Title</string>
+    <string name="newly">Newly</string>
+    <string name="dj">DJ</string>
+    <string name="not_supported_voice_recognize">この端末は音声入力に対応していません</string>
+    <string name="cancel">Cancel</string>
+    <string name="send_bugreport">前回の起動中に予期しないエラーが発生しました。開発元にエラー情報を送信しますか？ プライバシーに関わる情報は送信しません。</string>
+    <string name="post">Post</string>
+
 </resources>

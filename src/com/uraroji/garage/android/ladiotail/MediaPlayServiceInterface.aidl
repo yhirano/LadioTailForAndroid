@@ -29,49 +29,49 @@ import com.uraroji.garage.android.ladiotail.PlayStateChangedCallbackInterface;
  */
 interface MediaPlayServiceInterface {
 
-	/**
-	 * 再生を開始する
-	 * 
-	 * @param path
-	 *            再生する音声のパス
-	 * @param notificationTitle
-	 *            Notificationに表示するタイトル。局名や番組名などを入れる。
-	 * @param notificationContent
-	 *            Notificationに表示するタイトル。アーティスト名などを入れる。
-	 */
-	void play(in String path, in String notificationTitle,
-			in String notificationContent);
+    /**
+     * 再生を開始する
+     * 
+     * @param path
+     *            再生する音声のパス
+     * @param notificationTitle
+     *            Notificationに表示するタイトル。局名や番組名などを入れる。
+     * @param notificationContent
+     *            Notificationに表示するタイトル。アーティスト名などを入れる。
+     */
+    void play(in String path, in String notificationTitle,
+        in String notificationContent);
 
-	/**
-	 * 再生を停止する
-	 */
-	void stop();
+    /**
+     * 再生を停止する
+     */
+    void stop();
 
-	/**
-	 * 再生中のパスを取得する
-	 * 
-	 * @return 再生中のパス。再生していない場合はnull。
-	 */
-	String getPlayingPath();
+    /**
+     * 再生中のパスを取得する
+     * 
+     * @return 再生中のパス。再生していない場合はnull。
+     */
+    String getPlayingPath();
 
-	/**
-	 * 再生中かを取得する
-	 * 
-	 * @return 再生中の場合はtrue、そうでない場合はfalse
-	 */
-	boolean isPlaying();
+    /**
+     * 再生中かを取得する
+     * 
+     * @return 再生中の場合はtrue、そうでない場合はfalse
+     */
+    boolean isPlaying();
 
-	/**
-	 * 再生状態が変わったことを通知するコールバックを登録
-	 *
-	 * @param callback 登録するコールバック
-	 */
-	void registerPlayStateChangedCallback(PlayStateChangedCallbackInterface callback);
+    /**
+     * 再生状態が変わったことを通知するコールバックを登録
+     *
+     * @param callback 登録するコールバック
+     */
+    void registerPlayStateChangedCallback(PlayStateChangedCallbackInterface callback);
 
-	/**
-	 * 登録済みの再生状態が変わったことを通知するコールバックを削除
-	 *
-	 * @param callback 削除するコールバック
-	 */
-	void unregisterPlayStateChangedCallback(PlayStateChangedCallbackInterface callback);
+    /**
+     * 登録済みの再生状態が変わったことを通知するコールバックを削除
+     *
+     * @param callback 削除するコールバック
+     */
+    void unregisterPlayStateChangedCallback(PlayStateChangedCallbackInterface callback);
 }
