@@ -65,7 +65,6 @@ import com.uraroji.garage.android.netladiolib.Headline;
 import com.uraroji.garage.android.netladiolib.HeadlineManager;
 
 import java.io.IOException;
-import java.security.InvalidParameterException;
 import java.util.List;
 
 /**
@@ -813,7 +812,7 @@ public class MainActivity extends TabActivity {
          */
         /* package */void update(Channel[] channels, String playingPath) {
             if (channels == null) {
-                throw new InvalidParameterException(
+                throw new IllegalArgumentException(
                         "channels is specified null.");
             }
 
