@@ -363,9 +363,9 @@ public class ChannelActivity extends Activity {
 
             this.mInflater = LayoutInflater.from(context);
 
-            int listensersNum = channel.getCln();
-            if (listensersNum != Channel.UNKNOWN_LISTENER_NUM) {
-                addInfoList(R.string.listeners, String.valueOf(listensersNum));
+            final int LISTENSERS_NUM = channel.getCln();
+            if (LISTENSERS_NUM != Channel.UNKNOWN_LISTENER_NUM) {
+                addInfoList(R.string.listeners, String.valueOf(LISTENSERS_NUM));
             }
             addInfoList(R.string.genre, channel.getGnl());
             addInfoList(R.string.description, channel.getDesc());
@@ -376,18 +376,18 @@ public class ChannelActivity extends Activity {
                 addInfoList(R.string.total_listener,
                         String.valueOf(totalListensersNum));
             }
-            int maxListensersNum = channel.getMax();
-            if (maxListensersNum != Channel.UNKNOWN_LISTENER_NUM) {
+            final int MAXLISTENSERS_NUM = channel.getMax();
+            if (MAXLISTENSERS_NUM != Channel.UNKNOWN_LISTENER_NUM) {
                 addInfoList(R.string.max_listeners,
-                        String.valueOf(maxListensersNum));
+                        String.valueOf(MAXLISTENSERS_NUM));
             }
             if (channel.getChs() != Channel.UNKNOWN_CHANNEL_NUM) {
                 addInfoList(R.string.channel, getChsString(channel.getChs()));
             }
             addInfoList(R.string.format, channel.getType());
-            int bitNum = channel.getBit();
-            if (bitNum != Channel.UNKNOWN_BITRATE_NUM) {
-                addInfoList(R.string.bitrate, String.valueOf(bitNum) + "kbps");
+            final int BIT_NUM = channel.getBit();
+            if (BIT_NUM != Channel.UNKNOWN_BITRATE_NUM) {
+                addInfoList(R.string.bitrate, String.valueOf(BIT_NUM) + "kbps");
             }
             if (channel.getSmpl() != Channel.UNKNOWN_SAMPLING_RATE_NUM) {
                 addInfoList(R.string.sampling_rate,
