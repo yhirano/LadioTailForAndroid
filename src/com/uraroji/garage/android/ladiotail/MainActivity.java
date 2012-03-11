@@ -65,6 +65,7 @@ import com.uraroji.garage.android.netladiolib.Headline;
 import com.uraroji.garage.android.netladiolib.HeadlineManager;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -756,40 +757,73 @@ public class MainActivity extends TabActivity {
                     view.setTag(holder);
                 }
 
-                final Channel channel = (Channel) getItem(position);
+                final Channel CHANNEL = (Channel) getItem(position);
 
-                String title = (channel).getNam();
-                if (title != null) {
-                    holder.channelTitleTextView.setText(title);
+                final String TITLE = CHANNEL.getNam();
+                if (TITLE != null) {
+                    holder.channelTitleTextView.setText(TITLE);
                 } else {
                     holder.channelTitleTextView.setText("");
                 }
 
-                String dj = (channel).getDj();
-                if (dj != null) {
-                    holder.channelDjTextView.setText(dj);
+                final String DJ = CHANNEL.getDj();
+                if (DJ != null) {
+                    holder.channelDjTextView.setText(DJ);
                 } else {
                     holder.channelDjTextView.setText("");
                 }
 
-                int listenersNum = (channel).getCln();
-                if (listenersNum != Channel.UNKNOWN_LISTENER_NUM) {
+                final int LISTENERS_NUM = CHANNEL.getCln();
+                if (LISTENERS_NUM != Channel.UNKNOWN_LISTENER_NUM) {
                     holder.channelListenersTextView.setText(String
-                            .valueOf(listenersNum) + " listeners");
+                            .valueOf(LISTENERS_NUM) + " listeners");
                 } else {
                     holder.channelListenersTextView.setText("");
                 }
 
-                String dateString = (channel).getTimsString();
-                if (dateString != null) {
-                    holder.channelDateTextView.setText("at " + dateString);
-                } else {
+                // 放送開始時間を取得
+                final Date START_DATE = CHANNEL.getTims();
+                if (START_DATE != null) {
+                    // 放送開始時間と現在時刻の差分を取得
+                    final long DIFF = (new Date()).getTime() - START_DATE.getTime();
+
+                    // 1分未満
+                    if (DIFF < 60 * 1000) {
+                        holder.channelDateTextView.setText(R.string.start_time_under1min);
+                    }
+                    // 1分以上
+                    else {
+                        final long DAY = DIFF / (24 * 60 * 60 * 1000);
+                        final long HOUR = (DIFF % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000);
+                        final long MIN = (DIFF % (60 * 60 * 1000)) / (60 * 1000);
+                        
+                        String dateStr = "";
+                        if (0 < DAY && DAY <= 1) {
+                            dateStr += String.format(getString(R.string.start_time_day), DAY);
+                        } else if (DAY > 1) {
+                            dateStr += String.format(getString(R.string.start_time_days), DAY);
+                        }
+                        if (0 < HOUR && HOUR <= 1) {
+                            dateStr += String.format(getString(R.string.start_time_hour), HOUR);
+                        } else if (HOUR > 1) {
+                            dateStr += String.format(getString(R.string.start_time_hours), HOUR);
+                        }
+                        if (0 < MIN && MIN <= 1) {
+                            dateStr += String.format(getString(R.string.start_time_min), MIN);
+                        } else if (MIN > 1) {
+                            dateStr += String.format(getString(R.string.start_time_mins), MIN);
+                        }
+                        dateStr += getString(R.string.start_time_ago);
+                        
+                        holder.channelDateTextView.setText(dateStr);
+                    }
+                }else{
                     holder.channelDateTextView.setText("");
                 }
-
+                
                 // 再生中のURLと番組のURLが同じ場合に再生中であることをリスト内に表示する
-                if (channel.getPlayUrl() != null
-                        && channel.getPlayUrl().toString().equals(mPlayingPath)) {
+                if (CHANNEL.getPlayUrl() != null
+                        && CHANNEL.getPlayUrl().toString().equals(mPlayingPath)) {
                     holder.playingImageView.setImageResource(R.drawable.play_in_list);
                 } else {
                     holder.playingImageView.setImageBitmap(null);

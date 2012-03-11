@@ -4,5 +4,13 @@
     <string name="failed_play_message">再生できませんでした</string>
     <string name="failed_fetch_headline">番組情報が取得できませんでした</string>
     <string name="not_supported_voice_recognize">この端末は音声入力に対応していません</string>
+    <string name="start_time_days">%d日</string>
+    <string name="start_time_day">%d日</string>
+    <string name="start_time_hours">%d時間</string>
+    <string name="start_time_hour">%d時間</string>
+    <string name="start_time_mins">%d分</string>
+    <string name="start_time_min">%d分</string>
+    <string name="start_time_ago">前</string>
+    <string name="start_time_under1min">1分前</string>
 
 </resources>

@@ -35,6 +35,14 @@
     <string name="cancel">Cancel</string>
     <string name="send_bugreport">An unexpected error occurred while running application the last. Do you send error report to the developer? This report are not include your privacy information.</string>
     <string name="post">Post</string>
+    <string name="start_time_days">%d days </string>
+    <string name="start_time_day">%d day </string>
+    <string name="start_time_hours">%d hours </string>
+    <string name="start_time_hour">%d hour </string>
+    <string name="start_time_mins">%d mins </string>
+    <string name="start_time_min">%d min </string>
+    <string name="start_time_ago">ago</string>
+    <string name="start_time_under1min">1 min ago</string>
 
     <color name="channel_info_buttons_background">#5F5F5F</color>
     <color name="playing_text">#CC0000</color>
