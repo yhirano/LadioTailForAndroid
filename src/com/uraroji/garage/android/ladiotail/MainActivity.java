@@ -667,6 +667,11 @@ public class MainActivity extends TabActivity {
         private LayoutInflater mInflater;
 
         /**
+         * 広告のView
+         */
+        private View mAdView;
+
+        /**
          * 再生中のパス
          */
         private String mPlayingPath;
@@ -685,6 +690,7 @@ public class MainActivity extends TabActivity {
             super();
 
             this.mInflater = LayoutInflater.from(context);
+            this.mAdView = mInflater.inflate(R.layout.ad_item_row, null);
         }
 
         @Override
@@ -716,18 +722,17 @@ public class MainActivity extends TabActivity {
             if (position == 0) {
                 /*
                  * convertView.getTagで何かが入っている場合、番組の表示で使用されたconvertViewだと思われるので、
-                 * AdMob表示用に改めてconvertViewを作成する。
+                 * 広告表示用のViewを設定する。
                  */
                 if (view == null || view.getTag() != null) {
-                    view = mInflater.inflate(R.layout.ad_item_row, null);
-                    view.setTag(null);
+                    view = mAdView;
                 }
             } else {
                 ViewHolder holder = null;
 
                 /*
-                 * convertView.getTagで何も入っていない場合、AdMobの表示で使用されたconvertViewだと思われるので
-                 * 、 番組表示用に改めてconvertViewを作成する。
+                 * convertView.getTagで何も入っていない場合、AdMobの表示で使用されたconvertViewだと思われるので、
+                 * 番組表示用に改めてconvertViewを作成する。
                  */
                 if (view == null || view.getTag() == null) {
                     view = mInflater
