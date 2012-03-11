@@ -105,7 +105,7 @@ public class MainActivity extends TabActivity {
                 this));
 
         // 再生管理の初期化
-        MediaPlayManager.init(getApplicationContext());
+        MediaPlayManager.getConnector().init(getApplicationContext());
 
         // TabHostを取得
         final TabHost tabHost = getTabHost();
@@ -307,7 +307,7 @@ public class MainActivity extends TabActivity {
         mDjListAdapter = new ChannelAdapter(this);
         djListView.setAdapter(mDjListAdapter);
 
-        MediaPlayManager.addPlayStateChangedHandler(new Handler() {
+        MediaPlayManager.getConnector().addPlayStateChangedHandler(new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 // 再生状態が変わったらリストを更新
@@ -346,7 +346,7 @@ public class MainActivity extends TabActivity {
         // 一応起動時にヘッドライン自動取得ができるようにしておく
         isFetchAndUpdateHeadlineStartup = true;
 
-        MediaPlayManager.release();
+        MediaPlayManager.getConnector().release();
     }
 
     // オプションメニュー作成
@@ -361,12 +361,12 @@ public class MainActivity extends TabActivity {
                 Menu.NONE, R.string.reload);
         reloadMenuItem.setIcon(R.drawable.ic_menu_reload);
 
-        MediaPlayManager.addPlayStateChangedHandler(new Handler() {
+        MediaPlayManager.getConnector().addPlayStateChangedHandler(new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
-                    case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
-                    case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
                         // 再生が終了したら停止ボタンを無効にする
                         stopMenuItem.setEnabled(false);
                         break;
@@ -383,7 +383,7 @@ public class MainActivity extends TabActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // 再生中のみに停止ボタンを有効にする
-        menu.findItem(MENU_ID_STOP).setEnabled(MediaPlayManager.isPlaying());
+        menu.findItem(MENU_ID_STOP).setEnabled(MediaPlayManager.getConnector().isPlaying());
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -522,7 +522,7 @@ public class MainActivity extends TabActivity {
         // 検索ボックスの文字列を空白文字で分割する
         final String searchWord = mSearchEditText.getText().toString();
 
-        final String playingPath = MediaPlayManager.getPlayingPath();
+        final String playingPath = MediaPlayManager.getConnector().getPlayingPath();
 
         // リストの更新
         mNewlyListAdapter.update(
@@ -555,7 +555,7 @@ public class MainActivity extends TabActivity {
 
         // 現在再生中の番組の場合は何もしない
         if (channel.getPlayUrl().toString()
-                .equals(MediaPlayManager.getPlayingPath()) == true) {
+                .equals(MediaPlayManager.getConnector().getPlayingPath()) == true) {
             return;
         }
 
@@ -572,9 +572,9 @@ public class MainActivity extends TabActivity {
             @Override
             public void run() {
                 // 再生開始のメッセージを捕捉するためにハンドラーを登録
-                MediaPlayManager.addPlayStateChangedHandler(mmHandler);
+                MediaPlayManager.getConnector().addPlayStateChangedHandler(mmHandler);
                 // 再生開始
-                MediaPlayManager.play(channel.getPlayUrl().toString(),
+                MediaPlayManager.getConnector().play(channel.getPlayUrl().toString(),
                         channel.getNam(), channel.getDj());
             }
 
@@ -582,15 +582,15 @@ public class MainActivity extends TabActivity {
                 @Override
                 public void handleMessage(Message msg) {
                     switch (msg.what) {
-                        case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
                             // 再生開始したのでハンドラーを削除
-                            MediaPlayManager.removePlayStateChangedHandler(this);
+                            MediaPlayManager.getConnector().removePlayStateChangedHandler(this);
                             // ダイアログを閉じる
                             loadingDialog.dismiss();
                             break;
-                        case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
                             // 再生失敗したのでハンドラーを削除
-                            MediaPlayManager.removePlayStateChangedHandler(this);
+                            MediaPlayManager.getConnector().removePlayStateChangedHandler(this);
                             // ダイアログを閉じる
                             loadingDialog.dismiss();
                             // 失敗した旨のメッセージを出す
@@ -598,8 +598,8 @@ public class MainActivity extends TabActivity {
                                     R.string.failed_play_message, Toast.LENGTH_LONG)
                                     .show();
                             break;
-                        case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
-                        case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
                             break;
                         default:
                             Log.w(C.TAG, String.format(
@@ -633,7 +633,7 @@ public class MainActivity extends TabActivity {
 
             @Override
             public void run() {
-                MediaPlayManager.stop();
+                MediaPlayManager.getConnector().stop();
                 // 停止の通知
                 mmHandler.sendEmptyMessage(MSG_STOPPED);
             }

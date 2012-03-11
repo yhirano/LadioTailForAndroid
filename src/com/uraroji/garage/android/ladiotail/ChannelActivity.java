@@ -129,7 +129,7 @@ public class ChannelActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                final String playingPath = MediaPlayManager.getPlayingPath();
+                final String playingPath = MediaPlayManager.getConnector().getPlayingPath();
 
                 // 再生URLが存在しない場合は何もしない
                 if (mChannel.getPlayUrl() == null) {
@@ -185,7 +185,7 @@ public class ChannelActivity extends Activity {
             }
         });
 
-        MediaPlayManager.addPlayStateChangedHandler(new Handler() {
+        MediaPlayManager.getConnector().addPlayStateChangedHandler(new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 switchPlayStopButtonText();
@@ -210,9 +210,9 @@ public class ChannelActivity extends Activity {
             @Override
             public void run() {
                 // 再生開始のメッセージを捕捉するためにハンドラーを登録
-                MediaPlayManager.addPlayStateChangedHandler(mmHandler);
+                MediaPlayManager.getConnector().addPlayStateChangedHandler(mmHandler);
                 // 再生開始
-                MediaPlayManager.play(mChannel.getPlayUrl().toString(),
+                MediaPlayManager.getConnector().play(mChannel.getPlayUrl().toString(),
                         mChannel.getNam(), mChannel.getDj());
             }
 
@@ -220,15 +220,15 @@ public class ChannelActivity extends Activity {
                 @Override
                 public void handleMessage(Message msg) {
                     switch (msg.what) {
-                        case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
                             // 再生開始したのでハンドラーを削除
-                            MediaPlayManager.removePlayStateChangedHandler(this);
+                            MediaPlayManager.getConnector().removePlayStateChangedHandler(this);
                             // ダイアログを閉じる
                             loadingDialog.dismiss();
                             break;
-                        case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
                             // 再生失敗したのでハンドラーを削除
-                            MediaPlayManager.removePlayStateChangedHandler(this);
+                            MediaPlayManager.getConnector().removePlayStateChangedHandler(this);
                             // ダイアログを閉じる
                             loadingDialog.dismiss();
                             // 失敗した旨のメッセージを出す
@@ -236,8 +236,8 @@ public class ChannelActivity extends Activity {
                                     R.string.failed_play_message, Toast.LENGTH_LONG)
                                     .show();
                             break;
-                        case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
-                        case MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
                             break;
                         default:
                             Log.w(C.TAG, String.format(
@@ -270,7 +270,7 @@ public class ChannelActivity extends Activity {
 
             @Override
             public void run() {
-                MediaPlayManager.stop();
+                MediaPlayManager.getConnector().stop();
                 // 停止の通知
                 mmHandler.sendEmptyMessage(MSG_STOPPED);
             }
@@ -300,7 +300,7 @@ public class ChannelActivity extends Activity {
      * Play/Stopボタンのテキストを、再生状態によって書き換える
      */
     private void switchPlayStopButtonText() {
-        final String playingPath = MediaPlayManager.getPlayingPath();
+        final String playingPath = MediaPlayManager.getConnector().getPlayingPath();
 
         // 再生URLが存在しない場合や、再生中の番組が無い場合はとりあえずPlayを表示しておく
         if (mChannel.getPlayUrl() == null || playingPath == null) {

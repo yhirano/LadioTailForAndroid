@@ -38,11 +38,6 @@ public class C {
     public static final boolean LOCAL_LOG = false;
 
     /**
-     * 番組の再生をサービスで行うか サービスで行う場合、LadioTailが終了しても再生を継続する
-     */
-    public static final boolean MEDIA_PLAY_AT_SERVICE = true;
-
-    /**
      * TabHost/TabWedgetがEditTextからフォーカスを盗むAndroidのバグに対する対処をするか
      * エミュレータでは発生するが、GaraxyTabでは発生していない 参照：
      * http://code.google.com/p/android/issues/detail?id=2516

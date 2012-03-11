@@ -34,9 +34,29 @@ import android.util.Log;
 import java.util.ArrayList;
 
 /**
- * サービスでのメディア再生
+ * 再生サービスとの通信クラス
  */
-public class MediaPlayAtService implements MediaPlayInterface {
+public class MediaPlayServiceConnector {
+
+    /**
+     * 再生開始メッセージ
+     */
+    public static final int MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED = 0;
+
+    /**
+     * 再生完了メッセージ
+     */
+    public static final int MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED = 1;
+
+    /**
+     * 再生停止メッセージ
+     */
+    public static final int MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED = 2;
+
+    /**
+     * 再生開始失敗メッセージ
+     */
+    public static final int MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START = 3;
 
     /**
      * MediaPlayServiceへのインターフェース
@@ -51,10 +71,10 @@ public class MediaPlayAtService implements MediaPlayInterface {
     /**
      * 再生状態が変わった際のハンドラーリスト
      * 
-     * @see MediaPlayManager#MSG_PLAY_STARTED
-     * @see MediaPlayManager#MSG_PLAY_COMPLATED
-     * @see MediaPlayManager#MSG_PLAY_STOPPED
-     * @see MediaPlayManager#MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START
      */
     private ArrayList<Handler> mPlayStateChangedHandlerist = new ArrayList<Handler>();
 
@@ -63,7 +83,13 @@ public class MediaPlayAtService implements MediaPlayInterface {
      */
     private final Object mPlayStateChangedHandleristLock = new Object();
 
-    @Override
+    /**
+     * 初期化
+     * 
+     * 一番はじめに再生をする前に初期化すること
+     * 
+     * @param context コンテキスト。アプリケーションのコンテキストを渡すこと。
+     */
     public void init(Context context) {
         this.mContext = context;
 
@@ -73,7 +99,13 @@ public class MediaPlayAtService implements MediaPlayInterface {
                 Context.BIND_AUTO_CREATE);
     }
 
-    @Override
+    /**
+     * 再生を開始する
+     * 
+     * @param path 再生する音声のパス
+     * @param notificationTitle Notificationに表示するタイトル。局名や番組名などを入れる。
+     * @param notificationContent Notificationに表示するタイトル。アーティスト名などを入れる。
+     */
     public void play(String path, String notificationTitle,
             String notificationContent) {
         if (C.LOCAL_LOG) {
@@ -86,15 +118,17 @@ public class MediaPlayAtService implements MediaPlayInterface {
                         notificationContent);
             } else {
                 Log.w(C.TAG, "Service interface is NULL in play.");
-                notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+                notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
             }
         } catch (RemoteException e) {
             Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in play.");
-            notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+            notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
         }
     }
 
-    @Override
+    /**
+     * 再生を停止する
+     */
     public void stop() {
         if (C.LOCAL_LOG) {
             Log.v(C.TAG, "Trying to stop playing.");
@@ -105,15 +139,18 @@ public class MediaPlayAtService implements MediaPlayInterface {
                 mMediaPlayServiceInterface.stop();
             } else {
                 Log.w(C.TAG, "Service interface is NULL in stop.");
-                notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+                notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
             }
         } catch (RemoteException e) {
             Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in stop.");
-            notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+            notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
         }
     }
 
-    @Override
+    /**
+     * 再生に使用したリソースを解放する。 アプリケーションの終了時などにリソースを解放すること。
+     * 解放後に再生したい場合、改めてplayを呼べば再生は可能。 その場合は改めてリソース解放をすること。
+     */
     public void release() {
         if (C.LOCAL_LOG) {
             Log.v(C.TAG, "Release MediaPlay resouce.");
@@ -129,7 +166,11 @@ public class MediaPlayAtService implements MediaPlayInterface {
         }
     }
 
-    @Override
+    /**
+     * 再生中のパスを取得する
+     * 
+     * @return 再生中のパス。再生していない場合はnull。
+     */
     public String getPlayingPath() {
         try {
             if (mMediaPlayServiceInterface != null) {
@@ -146,7 +187,11 @@ public class MediaPlayAtService implements MediaPlayInterface {
         }
     }
 
-    @Override
+    /**
+     * 再生中かを取得する
+     * 
+     * @return 再生中の場合はtrue、そうでない場合はfalse
+     */
     public boolean isPlaying() {
         try {
             if (mMediaPlayServiceInterface != null) {
@@ -163,7 +208,15 @@ public class MediaPlayAtService implements MediaPlayInterface {
         }
     }
 
-    @Override
+    /**
+     * 再生状態が変わった際にメッセージが受け取るハンドラーを登録する 再生状態が変わった際には、Handlerのwhatに変更後の状態が格納される。
+     * 
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START
+     * @param handler 登録するハンドラ
+     */
     public void addPlayStateChangedHandler(Handler handler) {
         synchronized (mPlayStateChangedHandleristLock) {
             if (handler != null) {
@@ -172,7 +225,12 @@ public class MediaPlayAtService implements MediaPlayInterface {
         }
     }
 
-    @Override
+    /**
+     * 登録済みの再生状態変更ハンドラを削除する
+     * 
+     * @param handler 削除するハンドラ
+     * @see addPlayStateChangedHandler
+     */
     public void removePlayStateChangedHandler(Handler handler) {
         synchronized (mPlayStateChangedHandleristLock) {
             mPlayStateChangedHandlerist.remove(handler);
@@ -212,16 +270,16 @@ public class MediaPlayAtService implements MediaPlayInterface {
         public void changed(int changedState) throws RemoteException {
             switch (changedState) {
                 case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED:
-                    notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED);
+                    notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED);
                     break;
                 case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED:
-                    notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED);
+                    notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED);
                     break;
                 case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED:
-                    notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED);
+                    notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED);
                     break;
                 case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START:
-                    notifyPlayStateChanged(MediaPlayManager.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
+                    notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START);
                     break;
                 default:
                     Log.w(C.TAG,
