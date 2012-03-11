@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="failed_play_message">再生できませんでした</string>
+    <string name="failed_fetch_headline">番組情報が取得できませんでした</string>
+    <string name="not_supported_voice_recognize">この端末は音声入力に対応していません</string>
+
+</resources>

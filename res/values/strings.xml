@@ -3,7 +3,7 @@
 
     <string name="app_name">Ladio Tail</string>
     <string name="ok">OK</string>
-    <string name="failed_play_message">再生できませんでした</string>
+    <string name="failed_play_message">Failed to play start.</string>
     <string name="back">Back</string>
     <string name="stop">Stop</string>
     <string name="play">Play</string>
@@ -23,21 +23,20 @@
     <string name="format">Format</string>
     <string name="mono">Mono</string>
     <string name="stereo">Stereo</string>
-    <string name="failed_fetch_headline">番組情報が取得できませんでした</string>
+    <string name="failed_fetch_headline">Channel information could not be obtained.</string>
     <string name="preparing">Preparing...</string>
-
-    <color name="channel_info_buttons_background">#5F5F5F</color>
-    <color name="playing_text">#CC0000</color>
-
     <string name="unknown">Unknown</string>
     <string name="search">Search</string>
     <string name="voice">Voice</string>
     <string name="title">Title</string>
     <string name="newly">Newly</string>
     <string name="dj">DJ</string>
-    <string name="not_supported_voice_recognize">この端末は音声入力に対応していません</string>
+    <string name="not_supported_voice_recognize">This device does not support voice input.</string>
     <string name="cancel">Cancel</string>
-    <string name="send_bugreport">前回の起動中に予期しないエラーが発生しました。開発元にエラー情報を送信しますか？ プライバシーに関わる情報は送信しません。</string>
+    <string name="send_bugreport">An unexpected error occurred while running application the last. Do you send error report to the developer? This report are not include your privacy information.</string>
     <string name="post">Post</string>
+
+    <color name="channel_info_buttons_background">#5F5F5F</color>
+    <color name="playing_text">#CC0000</color>
 
 </resources>
