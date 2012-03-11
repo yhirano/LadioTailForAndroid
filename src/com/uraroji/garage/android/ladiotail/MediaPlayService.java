@@ -84,7 +84,7 @@ public class MediaPlayService extends Service {
     /**
      * ロックオブジェクト
      */
-    private final Object mlock = new Object();
+    private final Object mLock = new Object();
 
     /**
      * 再生状態が変化した通知をするコールバックのリスト
@@ -101,7 +101,7 @@ public class MediaPlayService extends Service {
         super.onDestroy();
 
         boolean isPlayed;
-        synchronized (mlock) {
+        synchronized (mLock) {
             if (mMediaPlayer == null) {
                 return;
             }
@@ -140,14 +140,14 @@ public class MediaPlayService extends Service {
         }
 
         boolean isPlayed;
-        synchronized (mlock) {
+        synchronized (mLock) {
             if (mMediaPlayer == null) {
                 mMediaPlayer = new MediaPlayer();
                 mMediaPlayer
                         .setOnCompletionListener(new OnCompletionListener() {
                             @Override
                             public void onCompletion(MediaPlayer mp) {
-                                synchronized (mlock) {
+                                synchronized (mLock) {
                                     mMediaPlayer.stop();
                                     mPlayingPath = null;
                                     mNotificationTitle = null;
@@ -180,7 +180,7 @@ public class MediaPlayService extends Service {
         }
 
         boolean isStarted = true;
-        synchronized (mlock) {
+        synchronized (mLock) {
             try {
                 mMediaPlayer.setDataSource(path);
                 mMediaPlayer.prepare();
@@ -215,7 +215,7 @@ public class MediaPlayService extends Service {
         }
 
         boolean isPlayed;
-        synchronized (mlock) {
+        synchronized (mLock) {
             if (mMediaPlayer == null) {
                 return;
             }
@@ -240,7 +240,7 @@ public class MediaPlayService extends Service {
      * @return 再生中のパス。再生していない場合はnull。
      */
     public String getPlayingPath() {
-        synchronized (mlock) {
+        synchronized (mLock) {
             return mPlayingPath;
         }
     }
@@ -251,7 +251,7 @@ public class MediaPlayService extends Service {
      * @return 再生中の場合はtrue、そうでない場合はfalse
      */
     public boolean isPlaying() {
-        synchronized (mlock) {
+        synchronized (mLock) {
             if (mMediaPlayer == null) {
                 return false;
             }
