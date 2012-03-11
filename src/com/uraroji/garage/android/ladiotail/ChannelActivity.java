@@ -454,8 +454,8 @@ public class ChannelActivity extends Activity {
          * ChannelInfoAdapter#getViewにおけるViewの保持クラス
          */
         private class ViewHolder {
-            /* package */TextView infoTitleTextView;
-            /* package */TextView infoValueTextView;
+            /*package*/ TextView infoTitleTextView;
+            /*package*/ TextView infoValueTextView;
         }
 
         /**

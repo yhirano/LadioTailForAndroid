@@ -798,11 +798,11 @@ public class MainActivity extends TabActivity {
          * ChannelAdapter#getViewにおけるViewの保持クラス
          */
         private class ViewHolder {
-            /* package */TextView channelTitleTextView;
-            /* package */TextView channelDjTextView;
-            /* package */TextView channelListenersTextView;
-            /* package */TextView channelDateTextView;
-            /* package */ImageView playingImageView;
+            /*package*/ TextView channelTitleTextView;
+            /*package*/ TextView channelDjTextView;
+            /*package*/ TextView channelListenersTextView;
+            /*package*/ TextView channelDateTextView;
+            /*package*/ ImageView playingImageView;
         }
 
         /**
@@ -810,7 +810,7 @@ public class MainActivity extends TabActivity {
          * 
          * @param channels 番組リスト
          */
-        /* package */void update(Channel[] channels, String playingPath) {
+        /*package*/ void update(Channel[] channels, String playingPath) {
             if (channels == null) {
                 throw new IllegalArgumentException(
                         "channels is specified null.");
