@@ -8,12 +8,12 @@
         android:id="@+id/InfoTitleTextView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Small" />
+        android:textAppearance="@style/ChannelInfoRowText.Small" />
 
     <TextView
         android:id="@+id/InfoValueTextView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Medium" />
+        android:textAppearance="@style/ChannelInfoRowText.Medium" />
 
 </LinearLayout>

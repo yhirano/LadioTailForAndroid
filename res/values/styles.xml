@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="ChannelInfoRowText.Large" parent="android:style/TextAppearance.Large">
+        <item name="android:textSize">19sp</item>
+    </style>
+
+    <style name="ChannelInfoRowText.Medium" parent="android:style/TextAppearance.Medium">
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="ChannelInfoRowText.Small" parent="android:style/TextAppearance.Small">
+        <item name="android:textSize">12sp</item>
+    </style>
+
+</resources>

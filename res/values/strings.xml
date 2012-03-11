@@ -13,7 +13,8 @@
     <string name="genre">Genre</string>
     <string name="description">Description</string>
     <string name="song">Song</string>
-    <string name="listeners">Listeners</string>
+    <string name="listener">Listener</string>
+        <string name="listeners">Listeners</string>
     <string name="total_listener">Total listeners</string>
     <string name="max_listeners">Max listeners</string>
     <string name="bitrate">Bitrate</string>

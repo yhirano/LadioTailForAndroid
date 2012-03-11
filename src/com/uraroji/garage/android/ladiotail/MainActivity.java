@@ -746,6 +746,8 @@ public class MainActivity extends TabActivity {
                     holder = new ViewHolder();
                     holder.channelTitleTextView = (TextView) view
                             .findViewById(R.id.ChannelTitleTextView);
+                    holder.channelGenreTextView = (TextView) view
+                            .findViewById(R.id.ChannelGenreTextView);
                     holder.channelDjTextView = (TextView) view
                             .findViewById(R.id.ChannelDjTextView);
                     holder.channelListenersTextView = (TextView) view
@@ -766,6 +768,13 @@ public class MainActivity extends TabActivity {
                     holder.channelTitleTextView.setText("");
                 }
 
+                final String GENRE = CHANNEL.getGnl();
+                if (GENRE != null) {
+                    holder.channelGenreTextView.setText(GENRE);
+                } else {
+                    holder.channelGenreTextView.setText("");
+                }
+
                 final String DJ = CHANNEL.getDj();
                 if (DJ != null) {
                     holder.channelDjTextView.setText(DJ);
@@ -775,8 +784,10 @@ public class MainActivity extends TabActivity {
 
                 final int LISTENERS_NUM = CHANNEL.getCln();
                 if (LISTENERS_NUM != Channel.UNKNOWN_LISTENER_NUM) {
-                    holder.channelListenersTextView.setText(String
-                            .valueOf(LISTENERS_NUM) + " listeners");
+                    holder.channelListenersTextView.setText(String.valueOf(LISTENERS_NUM)
+                            + " "
+                            + ((LISTENERS_NUM <= 1) ? getString(R.string.listener)
+                                    : getString(R.string.listeners)));
                 } else {
                     holder.channelListenersTextView.setText("");
                 }
@@ -838,6 +849,7 @@ public class MainActivity extends TabActivity {
          */
         private class ViewHolder {
             /*package*/ TextView channelTitleTextView;
+            /*package*/ TextView channelGenreTextView;
             /*package*/ TextView channelDjTextView;
             /*package*/ TextView channelListenersTextView;
             /*package*/ TextView channelDateTextView;
