@@ -45,6 +45,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -99,6 +100,13 @@ public class MainActivity extends TabActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        /*
+         * 起動時にEditTextにフォーカスがいき、キーボードが表示されるのを防ぐ
+         * http://y-anz-m.blogspot.com/2010/05/android_17.html
+         */
+        this.getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN); 
+        
         setContentView(R.layout.main);
 
         // 補足されない例外をキャッチするハンドラを登録（バグレポート用）
