@@ -28,6 +28,7 @@ import android.app.TabActivity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -572,7 +573,14 @@ public class MainActivity extends TabActivity {
         final ProgressDialog loadingDialog = new ProgressDialog(this);
         loadingDialog.setMessage(getString(R.string.preparing));
         loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        loadingDialog.setCancelable(false);
+        loadingDialog.setCancelable(true);
+        loadingDialog.setOnCancelListener(new OnCancelListener() {
+            
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                MediaPlayManager.getConnector().stop();
+            }
+        });
         loadingDialog.show();
 
         // 再生開始は別スレッドで行う

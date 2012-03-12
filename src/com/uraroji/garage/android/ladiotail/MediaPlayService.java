@@ -29,6 +29,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -80,6 +81,11 @@ public class MediaPlayService extends Service {
      * Notificationに表示するタイトル。アーティスト名などを入れる。
      */
     private String mNotificationContent;
+
+    /**
+     * 再生状態
+     */
+    private PlayState mPlayState = new StoppedState();
 
     /**
      * ロックオブジェクト
@@ -148,62 +154,20 @@ public class MediaPlayService extends Service {
                             @Override
                             public void onCompletion(MediaPlayer mp) {
                                 synchronized (mLock) {
-                                    mMediaPlayer.stop();
+                                    mp.stop();
+                                    mp.setOnPreparedListener(null);
                                     mPlayingPath = null;
                                     mNotificationTitle = null;
                                     mNotificationContent = null;
-                                    mMediaPlayer.reset();
+                                    mp.reset();
                                 }
                                 notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED);
                             }
                         });
             }
-
-            // 同じ番組が再生中の場合は何もしない
-            if (mMediaPlayer.isPlaying() == true && mPlayingPath != null
-                    && mPlayingPath.equals(path) == true) {
-                return;
-            }
-
-            isPlayed = mMediaPlayer.isPlaying();
-
-            if (isPlayed == true) {
-                mMediaPlayer.stop();
-                mPlayingPath = null;
-                mNotificationTitle = null;
-                mNotificationContent = null;
-                mMediaPlayer.reset();
-            }
         }
-        if (isPlayed == true) {
-            notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
-        }
-
-        boolean isStarted = true;
-        synchronized (mLock) {
-            try {
-                mMediaPlayer.setDataSource(path);
-                mMediaPlayer.prepare();
-                mMediaPlayer.start();
-                mPlayingPath = path;
-                mNotificationTitle = notificationTitle;
-                mNotificationContent = notificationContent;
-            } catch (IOException e) {
-                Log.i(C.TAG, "MediaPlayer occurred IOException(" + e.toString()
-                        + ").");
-                mPlayingPath = null;
-                mNotificationTitle = null;
-                mNotificationContent = null;
-                mMediaPlayer.reset();
-                isStarted = false;
-            }
-        }
-
-        if (isStarted == true) {
-            notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED);
-        } else {
-            notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START);
-        }
+        
+        mPlayState.play(path, notificationTitle, notificationContent);
     }
 
     /**
@@ -214,24 +178,7 @@ public class MediaPlayService extends Service {
             Log.v(C.TAG, "trying to stop playing.");
         }
 
-        boolean isPlayed;
-        synchronized (mLock) {
-            if (mMediaPlayer == null) {
-                return;
-            }
-
-            isPlayed = mMediaPlayer.isPlaying();
-
-            mMediaPlayer.stop();
-            mPlayingPath = null;
-            mNotificationTitle = null;
-            mNotificationContent = null;
-            mMediaPlayer.reset();
-        }
-
-        if (isPlayed == true) {
-            notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
-        }
+        mPlayState.stop();
     }
 
     /**
@@ -271,56 +218,246 @@ public class MediaPlayService extends Service {
      */
     private void notifyPlayStateChanged(int changedState) {
         // コールバックを実行する
-        {
-            int n = playStateChangedCallbackList.beginBroadcast();
-
-            for (int i = 0; i < n; ++i) {
-                final PlayStateChangedCallbackInterface callback = playStateChangedCallbackList
-                        .getBroadcastItem(i);
-                if (callback != null) {
-                    try {
-                        callback.changed(changedState);
-                    } catch (RemoteException e) {
-                        // 例外はどうしようもないので無視しておく
-                        Log.w(C.TAG, "Occurd RemoteException(" + e.toString() + ").");
-                    }
-                }
-            }
-
-            playStateChangedCallbackList.finishBroadcast();
-        }
+        execCallback(changedState);
 
         // Notificationを更新する
-        {
-            switch (changedState) {
-                case MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED: {
-                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    Notification n = new Notification(R.drawable.icon,
-                            mNotificationTitle, System.currentTimeMillis());
+        updateNotification(changedState);
+    }
 
-                    Intent intent = new Intent(this, ChannelActivity.class);
-                    intent.putExtra(
-                            ChannelActivity.INTENT_EXTRA_OPEN_CHANNEL_PLAY_URL,
-                            mPlayingPath);
-                    PendingIntent contentIntent = PendingIntent.getActivity(this,
-                            0, intent, Intent.FLAG_ACTIVITY_NEW_TASK);
-                    n.setLatestEventInfo(this, mNotificationTitle,
-                            mNotificationContent, contentIntent);
+    /**
+     * コールバックを実行する
+     * 
+     * @param changedState 変化後の状態
+     */
+    private void execCallback(int changedState) {
+        final int n = playStateChangedCallbackList.beginBroadcast();
 
-                    nm.notify(C.NOTIFICATION_ID, n);
-                    break;
+        for (int i = 0; i < n; ++i) {
+            final PlayStateChangedCallbackInterface callback = playStateChangedCallbackList
+                    .getBroadcastItem(i);
+            if (callback != null) {
+                try {
+                    callback.changed(changedState);
+                } catch (RemoteException e) {
+                    // 例外はどうしようもないので無視しておく
+                    Log.w(C.TAG, "Occurd RemoteException(" + e.toString() + ").");
                 }
-                case MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED:
-                case MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED:
-                case MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START: {
-                    // 再生中ではないのでNotificationを消す
-                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    nm.cancel(C.NOTIFICATION_ID);
-                    break;
-                }
-                default:
-                    break;
             }
+        }
+
+        playStateChangedCallbackList.finishBroadcast();
+    }
+
+    /**
+     * Notificationを更新する
+     * 
+     * @param changedState 変化後の状態
+     */
+    private void updateNotification(int changedState) {
+        switch (changedState) {
+            case MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED: {
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                Notification n = new Notification(R.drawable.icon,
+                        mNotificationTitle, System.currentTimeMillis());
+
+                Intent intent = new Intent(this, ChannelActivity.class);
+                intent.putExtra(
+                        ChannelActivity.INTENT_EXTRA_OPEN_CHANNEL_PLAY_URL,
+                        mPlayingPath);
+                PendingIntent contentIntent = PendingIntent.getActivity(this,
+                        0, intent, Intent.FLAG_ACTIVITY_NEW_TASK);
+                n.setLatestEventInfo(this, mNotificationTitle,
+                        mNotificationContent, contentIntent);
+
+                nm.notify(C.NOTIFICATION_ID, n);
+                break;
+            }
+            case MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED:
+            case MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED:
+            case MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START: {
+                // 再生中ではないのでNotificationを消す
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                nm.cancel(C.NOTIFICATION_ID);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 再生状態を変更する
+     * 
+     * @param nextState 次の状態
+     */
+    private void changeState(PlayState nextState) {
+        mPlayState = nextState;
+        mPlayState.init();
+    }
+    
+    /**
+     * 再生状態を表すインターフェース
+     */
+    private interface PlayState {
+        /**
+         * 初期化
+         */
+        public void init();
+        
+        /**
+         * 再生開始
+         * 
+         * @param path 再生する音声のパス
+         * @param notificationTitle Notificationに表示するタイトル。局名や番組名などを入れる。
+         * @param notificationContent Notificationに表示するタイトル。アーティスト名などを入れる。
+         */
+        public void play(String path, String notificationTitle,
+                String notificationContent);
+        
+        /**
+         * 停止
+         */
+        public void stop();
+    }
+    
+    private class StoppedState implements PlayState {
+
+        @Override
+        public void init() {
+        }
+
+        @Override
+        public void play(String path, String notificationTitle,
+                String notificationContent) {
+            changeState(new PrepareState(path, notificationTitle, notificationContent));
+        }
+
+        @Override
+        public void stop() {
+        }
+    }
+    
+    private class PrepareState implements PlayState {
+        
+        private String mmPath;
+        private String mmNotificationTitle;
+        private String mmNotificationContent;
+        
+        public PrepareState(String path, String notificationTitle,
+                String notificationContent) {
+            mmPath = path;
+            mmNotificationTitle = notificationTitle;
+            mmNotificationContent = notificationContent;
+        }
+        
+        @Override
+        public void init() {
+            synchronized (mLock) {
+                try {
+                    mMediaPlayer.setDataSource(mmPath);
+                    mMediaPlayer.prepareAsync();
+                    mMediaPlayer.setOnPreparedListener(new OnPreparedListener() {
+
+                        @Override
+                        public void onPrepared(MediaPlayer mp) {
+                            synchronized (mLock) {
+                                mMediaPlayer.start();
+                                mPlayingPath = mmPath;
+                                mNotificationTitle = mmNotificationTitle;
+                                mNotificationContent = mmNotificationContent;
+                            }
+                            notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED);
+                            changeState(new PlayingState());
+                        }
+                    });
+                } catch (IOException e) {
+                    Log.i(C.TAG, "MediaPlayer occurred IOException(" + e.toString()
+                            + ").");
+                    mPlayingPath = null;
+                    mNotificationTitle = null;
+                    mNotificationContent = null;
+                    mMediaPlayer.reset();
+                    notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START);
+                    changeState(new StoppedState());
+                }
+            }
+        }
+
+        @Override
+        public void play(String path, String notificationTitle,
+                String notificationContent) {
+            // 同じ番組が再生中の場合は何もしない
+            if (mPlayingPath != null && mPlayingPath.equals(path) == true) {
+                return;
+            }
+            synchronized (mLock) {
+                mMediaPlayer.stop();
+                mMediaPlayer.setOnPreparedListener(null);
+                mPlayingPath = null;
+                mNotificationTitle = null;
+                mNotificationContent = null;
+                mMediaPlayer.reset();
+            }
+            notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
+
+            changeState(new PrepareState(mmPath, mmNotificationTitle, mmNotificationContent));
+        }
+
+        @Override
+        public void stop() {
+            synchronized (mLock) {
+                mMediaPlayer.stop();
+                mMediaPlayer.setOnPreparedListener(null);
+                mPlayingPath = null;
+                mNotificationTitle = null;
+                mNotificationContent = null;
+                mMediaPlayer.reset();
+            }
+            notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
+
+            changeState(new StoppedState());
+        }
+    }
+
+    private class PlayingState implements PlayState {
+        @Override
+        public void init() {
+        }
+
+        @Override
+        public void play(String path, String notificationTitle,
+                String notificationContent) {
+            // 同じ番組が再生中の場合は何もしない
+            if (mPlayingPath != null && mPlayingPath.equals(path) == true) {
+                return;
+            }
+            
+            synchronized (mLock) {
+                mMediaPlayer.stop();
+                mMediaPlayer.setOnPreparedListener(null);
+                mPlayingPath = null;
+                mNotificationTitle = null;
+                mNotificationContent = null;
+                mMediaPlayer.reset();
+            }
+            notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
+
+            changeState(new PrepareState(path, notificationTitle, notificationContent));
+        }
+
+        @Override
+        public void stop() {
+            synchronized (mLock) {
+                mMediaPlayer.stop();
+                mMediaPlayer.setOnPreparedListener(null);
+                mPlayingPath = null;
+                mNotificationTitle = null;
+                mNotificationContent = null;
+                mMediaPlayer.reset();
+            }
+            notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
+
+            changeState(new StoppedState());
         }
     }
 
