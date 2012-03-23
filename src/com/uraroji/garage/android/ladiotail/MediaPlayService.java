@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -275,9 +276,13 @@ public class MediaPlayService extends Service {
     private void updateNotification(int changedState) {
         switch (changedState) {
             case MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED: {
+                // Android 2.2以下と2.3以上でステータスバーに表示するアイコンを分ける
+                final int iconId = ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
+                        ? R.drawable.ic_stat_2_3 : R.drawable.ic_stat_2_2);
+
                 NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                Notification n = new Notification(R.drawable.icon,
-                        mNotificationTitle, System.currentTimeMillis());
+                Notification n = new Notification(iconId, mNotificationTitle,
+                        System.currentTimeMillis());
 
                 Intent intent = new Intent(this, ChannelActivity.class);
                 intent.putExtra(
