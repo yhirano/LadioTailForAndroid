@@ -85,7 +85,7 @@ public class MediaPlayService extends Service {
     /**
      * 再生状態
      */
-    private PlayState mPlayState = new StoppedState();
+    private PlayState mPlayState = new IdleState();
 
     /**
      * ロックオブジェクト
@@ -145,7 +145,6 @@ public class MediaPlayService extends Service {
             return;
         }
 
-        boolean isPlayed;
         synchronized (mLock) {
             if (mMediaPlayer == null) {
                 mMediaPlayer = new MediaPlayer();
@@ -230,22 +229,24 @@ public class MediaPlayService extends Service {
      * @param changedState 変化後の状態
      */
     private void execCallback(int changedState) {
-        final int n = playStateChangedCallbackList.beginBroadcast();
+        synchronized (playStateChangedCallbackList) {
+            final int n = playStateChangedCallbackList.beginBroadcast();
 
-        for (int i = 0; i < n; ++i) {
-            final PlayStateChangedCallbackInterface callback = playStateChangedCallbackList
-                    .getBroadcastItem(i);
-            if (callback != null) {
-                try {
-                    callback.changed(changedState);
-                } catch (RemoteException e) {
-                    // 例外はどうしようもないので無視しておく
-                    Log.w(C.TAG, "Occurd RemoteException(" + e.toString() + ").");
+            for (int i = 0; i < n; ++i) {
+                final PlayStateChangedCallbackInterface callback = playStateChangedCallbackList
+                        .getBroadcastItem(i);
+                if (callback != null) {
+                    try {
+                        callback.changed(changedState);
+                    } catch (RemoteException e) {
+                        // 例外はどうしようもないので無視しておく
+                        Log.w(C.TAG, "Occurd RemoteException(" + e.toString() + ").");
+                    }
                 }
             }
-        }
 
-        playStateChangedCallbackList.finishBroadcast();
+            playStateChangedCallbackList.finishBroadcast();
+        }
     }
 
     /**
@@ -320,7 +321,10 @@ public class MediaPlayService extends Service {
         public void stop();
     }
     
-    private class StoppedState implements PlayState {
+    /**
+     * 停止中状態
+     */
+    private class IdleState implements PlayState {
 
         @Override
         public void init() {
@@ -337,6 +341,9 @@ public class MediaPlayService extends Service {
         }
     }
     
+    /**
+     * 準備中状態
+     */
     private class PrepareState implements PlayState {
         
         private String mmPath;
@@ -355,7 +362,6 @@ public class MediaPlayService extends Service {
             synchronized (mLock) {
                 try {
                     mMediaPlayer.setDataSource(mmPath);
-                    mMediaPlayer.prepareAsync();
                     mMediaPlayer.setOnPreparedListener(new OnPreparedListener() {
 
                         @Override
@@ -370,6 +376,7 @@ public class MediaPlayService extends Service {
                             changeState(new PlayingState());
                         }
                     });
+                    mMediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     Log.i(C.TAG, "MediaPlayer occurred IOException(" + e.toString()
                             + ").");
@@ -378,7 +385,7 @@ public class MediaPlayService extends Service {
                     mNotificationContent = null;
                     mMediaPlayer.reset();
                     notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START);
-                    changeState(new StoppedState());
+                    changeState(new IdleState());
                 }
             }
         }
@@ -391,16 +398,19 @@ public class MediaPlayService extends Service {
                 return;
             }
             synchronized (mLock) {
-                mMediaPlayer.stop();
+                try {
+                    mMediaPlayer.setDataSource(new String());
+                } catch (Exception e) {
+                    mMediaPlayer.reset();
+                }
                 mMediaPlayer.setOnPreparedListener(null);
                 mPlayingPath = null;
                 mNotificationTitle = null;
                 mNotificationContent = null;
-                mMediaPlayer.reset();
             }
             notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
 
-            changeState(new PrepareState(mmPath, mmNotificationTitle, mmNotificationContent));
+            changeState(new PrepareState(path, notificationTitle, notificationContent));
         }
 
         @Override
@@ -415,10 +425,13 @@ public class MediaPlayService extends Service {
             }
             notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
 
-            changeState(new StoppedState());
+            changeState(new IdleState());
         }
     }
 
+    /**
+     * 再生中状態
+     */
     private class PlayingState implements PlayState {
         @Override
         public void init() {
@@ -457,7 +470,7 @@ public class MediaPlayService extends Service {
             }
             notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
 
-            changeState(new StoppedState());
+            changeState(new IdleState());
         }
     }
 
