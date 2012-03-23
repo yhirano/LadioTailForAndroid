@@ -69,6 +69,11 @@ public class MediaPlayServiceConnector {
     private Context mContext;
 
     /**
+     * サービスがバインド済みか
+     */
+    private boolean mIsBind = false;
+
+    /**
      * 再生状態が変わった際のハンドラーリスト
      * 
      * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED
@@ -95,7 +100,7 @@ public class MediaPlayServiceConnector {
 
         Intent intent = new Intent(MediaPlayServiceInterface.class.getName());
         context.startService(intent); // MeidaPlayサービス開始
-        context.bindService(intent, mMediaPlayServiceConn,
+        mIsBind = context.bindService(intent, mMediaPlayServiceConn,
                 Context.BIND_AUTO_CREATE);
     }
 
@@ -158,7 +163,10 @@ public class MediaPlayServiceConnector {
 
         boolean isPlayed = isPlaying();
 
-        mContext.unbindService(mMediaPlayServiceConn);
+        if (mIsBind == true) {
+            mContext.unbindService(mMediaPlayServiceConn);
+            mIsBind = false;
+        }
         // 再生中で無い場合はサービスを止める
         if (isPlayed == false) {
             mContext.stopService(new Intent(MediaPlayServiceInterface.class
