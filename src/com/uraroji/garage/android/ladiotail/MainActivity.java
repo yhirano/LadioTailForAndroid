@@ -375,11 +375,33 @@ public class MainActivity extends TabActivity {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED:
+                        /*
+                         * 再生準備中は更新ボタンを無効にする。
+                         * 進捗マークの管理が面倒なので、再生準備中とヘッドライン更新は同時に発生させないようにしているだけ。
+                         */
+                        reloadMenuItem.setEnabled(false);
+                        break;
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
                     case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
                     case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
+                        // 準備中が完了したら更新ボタンを有効にする
+                        reloadMenuItem.setEnabled(true);
+                        break;
+                    default:
+                        break;
+                }
+
+                switch (msg.what) {
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
                         // 再生が終了したら停止ボタンを無効にする
                         stopMenuItem.setEnabled(false);
                         break;
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
                     default:
                         break;
                 }
