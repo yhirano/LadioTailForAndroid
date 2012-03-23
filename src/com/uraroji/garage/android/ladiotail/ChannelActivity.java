@@ -23,7 +23,6 @@
 package com.uraroji.garage.android.ladiotail;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -33,6 +32,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -85,6 +85,10 @@ public class ChannelActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // タイトルバーにプログレスアイコンを表示可能にする
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
         setContentView(R.layout.channel_info);
 
         Intent intent = getIntent();
@@ -209,13 +213,8 @@ public class ChannelActivity extends Activity {
      * 番組を再生する 再生前にはプログレス画面が表示され、再生が開始するとプログレス画面が消える。
      */
     private void play() {
-        // 再生準備中ダイアログを表示する
-        final ProgressDialog loadingDialog = new ProgressDialog(
-                ChannelActivity.this);
-        loadingDialog.setMessage(getString(R.string.preparing));
-        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        loadingDialog.setCancelable(false);
-        loadingDialog.show();
+        // タイトルバーのプログレスアイコンを表示する
+        setProgressBarIndeterminateVisibility(true);
 
         // 番組の取得は別スレッドで行う
         new Thread() {
@@ -235,19 +234,20 @@ public class ChannelActivity extends Activity {
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
                             // 再生開始したのでハンドラーを削除
                             MediaPlayManager.getConnector().removePlayStateChangedHandler(this);
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             break;
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
                             // 再生失敗したのでハンドラーを削除
                             MediaPlayManager.getConnector().removePlayStateChangedHandler(this);
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             // 失敗した旨のメッセージを出す
                             Toast.makeText(ChannelActivity.this,
                                     R.string.failed_play_message, Toast.LENGTH_LONG)
                                     .show();
                             break;
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED:
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
                             break;
@@ -266,12 +266,8 @@ public class ChannelActivity extends Activity {
      * 番組を停止する 停止前にはプログレス画面が表示され、停止するとプログレス画面が消える。
      */
     private void stop() {
-        // 停止準備中ダイアログを表示する
-        final ProgressDialog loadingDialog = new ProgressDialog(this);
-        loadingDialog.setMessage(getString(R.string.preparing));
-        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        loadingDialog.setCancelable(false);
-        loadingDialog.show();
+        // タイトルバーのプログレスアイコンを表示する
+        setProgressBarIndeterminateVisibility(true);
 
         // 停止は別スレッドで行う
         new Thread() {
@@ -292,15 +288,15 @@ public class ChannelActivity extends Activity {
                 public void handleMessage(Message msg) {
                     switch (msg.what) {
                         case MSG_STOPPED:
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             break;
                         default:
                             Log.w(C.TAG, String.format(
                                     "Unknown mesasge(%d) from fetch handler.",
                                     msg.what));
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             break;
                     }
                 }

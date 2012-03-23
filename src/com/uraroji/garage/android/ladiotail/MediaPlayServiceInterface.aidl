@@ -48,18 +48,11 @@ interface MediaPlayServiceInterface {
     void stop();
 
     /**
-     * 再生中のパスを取得する
+     * 準備中・再生中のパスを取得する
      * 
-     * @return 再生中のパス。再生していない場合はnull。
+     * @return 準備中・再生中のパス。停止中の場合はnull。
      */
     String getPlayingPath();
-
-    /**
-     * 再生中かを取得する
-     * 
-     * @return 再生中の場合はtrue、そうでない場合はfalse
-     */
-    boolean isPlaying();
 
     /**
      * 再生状態が変わったことを通知するコールバックを登録

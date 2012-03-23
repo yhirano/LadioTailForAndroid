@@ -23,11 +23,11 @@
 package com.uraroji.garage.android.ladiotail;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.app.TabActivity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -45,6 +45,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -122,7 +123,10 @@ public class MainActivity extends TabActivity {
          * http://y-anz-m.blogspot.com/2010/05/android_17.html
          */
         this.getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN); 
-        
+
+        // タイトルバーにプログレスアイコンを表示可能にする
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
         setContentView(R.layout.main);
 
         // 補足されない例外をキャッチするハンドラを登録（バグレポート用）
@@ -387,11 +391,33 @@ public class MainActivity extends TabActivity {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED:
+                        /*
+                         * 再生準備中は更新ボタンを無効にする。
+                         * 進捗マークの管理が面倒なので、再生準備中とヘッドライン更新は同時に発生させないようにしているだけ。
+                         */
+                        reloadMenuItem.setEnabled(false);
+                        break;
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
                     case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
                     case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
+                        // 準備中が完了したら更新ボタンを有効にする
+                        reloadMenuItem.setEnabled(true);
+                        break;
+                    default:
+                        break;
+                }
+
+                switch (msg.what) {
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
                         // 再生が終了したら停止ボタンを無効にする
                         stopMenuItem.setEnabled(false);
                         break;
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED:
+                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
                     default:
                         break;
                 }
@@ -406,7 +432,7 @@ public class MainActivity extends TabActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // 再生中のみに停止ボタンを有効にする
-        menu.findItem(MENU_ID_STOP).setEnabled(MediaPlayManager.getConnector().isPlaying());
+        menu.findItem(MENU_ID_STOP).setEnabled(MediaPlayManager.getConnector().getPlayingPath() != null);
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -472,12 +498,11 @@ public class MainActivity extends TabActivity {
      * 通信中のダイアログを表示させつつ、番組を取得し、取得後にヘッドラインリストの内容を更新する
      */
     private void fecthAndUpdateHeadline() {
-        // 通信中ダイアログを表示する
-        final ProgressDialog loadingDialog = new ProgressDialog(this);
-        loadingDialog.setMessage(getString(R.string.now_loading));
-        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        loadingDialog.setCancelable(false);
-        loadingDialog.show();
+        // ヘッドラインリストのクリア
+        clearHeadline();
+        
+        // タイトルバーのプログレスアイコンを表示する
+        setProgressBarIndeterminateVisibility(true);
 
         // 番組の取得は別スレッドで行う
         new Thread() {
@@ -512,14 +537,14 @@ public class MainActivity extends TabActivity {
                         case MSG_FETCHED_HEADLINE:
                             // ヘッドラインリストの内容を更新する
                             updateHeadline();
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             break;
                         case MSG_FAILED_FETCH_HEADLINE:
                             // ヘッドラインリストの内容を更新する
                             updateHeadline();
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             // 失敗した旨のメッセージを出す
                             Toast.makeText(MainActivity.this,
                                     R.string.failed_fetch_headline,
@@ -529,8 +554,8 @@ public class MainActivity extends TabActivity {
                             Log.w(C.TAG, String.format(
                                     "Unknown mesasge(%d) from fetch handler.",
                                     msg.what));
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             break;
                     }
                 }
@@ -563,6 +588,17 @@ public class MainActivity extends TabActivity {
     }
 
     /**
+     * ヘッドラインリストの内容をクリアする
+     */
+    private void clearHeadline() {
+        // リストの更新
+        mNewlyListAdapter.clear();
+        mListenersListAdapter.clear();
+        mTitleListAdapter.clear();
+        mDjListAdapter.clear();
+    }
+    
+    /**
      * 番組を再生する 再生前にはプログレス画面が表示され、再生が開始するとプログレス画面が消える。
      * 
      * @param channel 再生する番組
@@ -582,12 +618,8 @@ public class MainActivity extends TabActivity {
             return;
         }
 
-        // 再生準備中ダイアログを表示する
-        final ProgressDialog loadingDialog = new ProgressDialog(this);
-        loadingDialog.setMessage(getString(R.string.preparing));
-        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        loadingDialog.setCancelable(false);
-        loadingDialog.show();
+        // タイトルバーのプログレスアイコンを表示する
+        setProgressBarIndeterminateVisibility(true);
 
         // 再生開始は別スレッドで行う
         new Thread() {
@@ -608,19 +640,20 @@ public class MainActivity extends TabActivity {
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
                             // 再生開始したのでハンドラーを削除
                             MediaPlayManager.getConnector().removePlayStateChangedHandler(this);
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             break;
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
                             // 再生失敗したのでハンドラーを削除
                             MediaPlayManager.getConnector().removePlayStateChangedHandler(this);
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             // 失敗した旨のメッセージを出す
                             Toast.makeText(MainActivity.this,
                                     R.string.failed_play_message, Toast.LENGTH_LONG)
                                     .show();
                             break;
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED:
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
                             break;
@@ -639,12 +672,8 @@ public class MainActivity extends TabActivity {
      * 番組を停止する 停止前にはプログレス画面が表示され、停止するとプログレス画面が消える。
      */
     private void stop() {
-        // 停止準備中ダイアログを表示する
-        final ProgressDialog loadingDialog = new ProgressDialog(this);
-        loadingDialog.setMessage(getString(R.string.preparing));
-        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        loadingDialog.setCancelable(false);
-        loadingDialog.show();
+        // タイトルバーのプログレスアイコンを表示する
+        setProgressBarIndeterminateVisibility(true);
 
         // 停止は別スレッドで行う
         new Thread() {
@@ -666,15 +695,15 @@ public class MainActivity extends TabActivity {
                 public void handleMessage(Message msg) {
                     switch (msg.what) {
                         case MSG_STOPPED:
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             break;
                         default:
                             Log.w(C.TAG, String.format(
                                     "Unknown mesasge(%d) from fetch handler.",
                                     msg.what));
-                            // ダイアログを閉じる
-                            loadingDialog.dismiss();
+                            // タイトルバーのプログレスアイコンを表示を消す
+                            setProgressBarIndeterminateVisibility(false);
                             break;
                     }
                 }
@@ -882,6 +911,7 @@ public class MainActivity extends TabActivity {
          * 番組リストを更新する
          * 
          * @param channels 番組リスト
+         * @param playingPath 再生中のパス
          */
         /*package*/ void update(Channel[] channels, String playingPath) {
             if (channels == null) {
@@ -889,9 +919,18 @@ public class MainActivity extends TabActivity {
                         "channels is specified null.");
             }
 
-            this.mPlayingPath = playingPath;
-
+            mPlayingPath = playingPath;
             mChannelList = channels;
+
+            notifyDataSetChanged();
+        }
+
+        /**
+         * 番組リストをクリアする
+         */
+        /*package*/ void clear() {
+            mPlayingPath = null;
+            mChannelList = new Channel[0];
 
             notifyDataSetChanged();
         }
