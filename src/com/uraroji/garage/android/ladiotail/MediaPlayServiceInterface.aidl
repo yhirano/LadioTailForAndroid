@@ -54,6 +54,8 @@ interface MediaPlayServiceInterface {
      */
     String getPlayingPath();
 
+    int getPlayState();
+
     /**
      * 再生状態が変わったことを通知するコールバックを登録
      *

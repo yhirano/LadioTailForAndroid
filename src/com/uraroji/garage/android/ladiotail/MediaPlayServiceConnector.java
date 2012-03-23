@@ -64,6 +64,26 @@ public class MediaPlayServiceConnector {
     public static final int MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START = 4;
 
     /**
+     * 再生状態・不明
+     */
+    public static final int PLAY_STATE_UNKNOWN = -1;
+
+    /**
+     * 再生状態・停止中
+     */
+    public static final int PLAY_STATE_IDLE = 0;
+    
+    /**
+     * 再生状態・準備中
+     */
+    public static final int PLAY_STATE_PREPARE = 1;
+
+    /**
+     * 再生状態・再生中
+     */
+    public static final int PLAY_STATE_PLAYING = 2;
+
+    /**
      * MediaPlayServiceへのインターフェース
      */
     private MediaPlayServiceInterface mMediaPlayServiceInterface;
@@ -167,14 +187,14 @@ public class MediaPlayServiceConnector {
             Log.v(C.TAG, "Release MediaPlay resouce.");
         }
 
-        final boolean isPlayed = (getPlayingPath() != null);
+        final int playState = getPlayState();
 
         if (mIsBind == true) {
             mContext.unbindService(mMediaPlayServiceConn);
             mIsBind = false;
         }
-        // 再生中で無い場合はサービスを止める
-        if (isPlayed == false) {
+        // 停止中の場合はサービスを止める
+        if (playState == PLAY_STATE_IDLE || playState == PLAY_STATE_UNKNOWN) {
             mContext.stopService(new Intent(MediaPlayServiceInterface.class
                     .getName()));
         }
@@ -198,6 +218,31 @@ public class MediaPlayServiceConnector {
             Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in getPlayingPath.");
             // どうしようもないのでとりあえずnullを返す
             return null;
+        }
+    }
+
+    /**
+     * 再生状態を取得する
+     * 
+     * @return 再生状態
+     * @see MediaPlayServiceConnector#PLAY_STATE_UNKNOWN
+     * @see MediaPlayServiceConnector#PLAY_STATE_IDLE
+     * @see MediaPlayServiceConnector#PLAY_STATE_PREPARE
+     * @see MediaPlayServiceConnector#PLAY_STATE_PLAYING
+     */
+    public int getPlayState() {
+        try {
+            if (mMediaPlayServiceInterface != null) {
+                return mMediaPlayServiceInterface.getPlayState();
+            } else {
+                Log.w(C.TAG, "Service interface is NULL in getPlayState.");
+                // どうしようもないのでとりあえずPLAY_STATE_UNKNOWNを返す
+                return PLAY_STATE_UNKNOWN;
+            }
+        } catch (RemoteException e) {
+            Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in getPlayState.");
+            // どうしようもないのでとりあえずPLAY_STATE_UNKNOWNを返す
+            return PLAY_STATE_UNKNOWN;
         }
     }
 

@@ -109,11 +109,6 @@ public class MainActivity extends TabActivity {
         }
     };
 
-    /**
-     * 再生状態変更時にMenuの有効無効を切り替えるためのHandler
-     */
-    private Handler mMenuEnableSwitchHandler = null;
-    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -366,7 +361,6 @@ public class MainActivity extends TabActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        MediaPlayManager.getConnector().removePlayStateChangedHandler(mMenuEnableSwitchHandler);
         MediaPlayManager.getConnector().removePlayStateChangedHandler(mUpdateHeadlineHandler);
 
         // 一応起動時にヘッドライン自動取得ができるようにしておく
@@ -387,52 +381,32 @@ public class MainActivity extends TabActivity {
                 Menu.NONE, R.string.reload);
         reloadMenuItem.setIcon(R.drawable.ic_menu_reload);
 
-        mMenuEnableSwitchHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED:
-                        /*
-                         * 再生準備中は更新ボタンを無効にする。
-                         * 進捗マークの管理が面倒なので、再生準備中とヘッドライン更新は同時に発生させないようにしているだけ。
-                         */
-                        reloadMenuItem.setEnabled(false);
-                        break;
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
-                        // 準備中が完了したら更新ボタンを有効にする
-                        reloadMenuItem.setEnabled(true);
-                        break;
-                    default:
-                        break;
-                }
-
-                switch (msg.what) {
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START:
-                        // 再生が終了したら停止ボタンを無効にする
-                        stopMenuItem.setEnabled(false);
-                        break;
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED:
-                    case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED:
-                    default:
-                        break;
-                }
-            }
-        };
-        MediaPlayManager.getConnector().addPlayStateChangedHandler(mMenuEnableSwitchHandler);
-
         return super.onCreateOptionsMenu(menu);
     }
 
     // オプションメニュー表示
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        // 再生中のみに停止ボタンを有効にする
-        menu.findItem(MENU_ID_STOP).setEnabled(MediaPlayManager.getConnector().getPlayingPath() != null);
+        final int playState = MediaPlayManager.getConnector().getPlayState();
+        
+        switch(playState) {
+            case MediaPlayServiceConnector.PLAY_STATE_UNKNOWN:
+            case MediaPlayServiceConnector.PLAY_STATE_IDLE:
+                menu.findItem(MENU_ID_RELOAD).setEnabled(true);
+                menu.findItem(MENU_ID_STOP).setEnabled(false);
+                break;
+            case MediaPlayServiceConnector.PLAY_STATE_PREPARE:
+                // 再生準備中は更新ボタンを無効にする
+                menu.findItem(MENU_ID_RELOAD).setEnabled(false);
+                menu.findItem(MENU_ID_STOP).setEnabled(true);
+                break;
+            case MediaPlayServiceConnector.PLAY_STATE_PLAYING:
+                menu.findItem(MENU_ID_RELOAD).setEnabled(true);
+                menu.findItem(MENU_ID_STOP).setEnabled(true);
+                break;
+            default:
+                break;
+        }
 
         return super.onPrepareOptionsMenu(menu);
     }

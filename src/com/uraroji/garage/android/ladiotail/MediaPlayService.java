@@ -68,6 +68,21 @@ public class MediaPlayService extends Service {
     public static final int MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START = 4;
 
     /**
+     * 再生状態・停止中
+     */
+    public static final int PLAY_STATE_IDLE = 0;
+    
+    /**
+     * 再生状態・準備中
+     */
+    public static final int PLAY_STATE_PREPARE = 1;
+
+    /**
+     * 再生状態・再生中
+     */
+    public static final int PLAY_STATE_PLAYING = 2;
+
+    /**
      * Media player
      */
     private MediaPlayer mMediaPlayer;
@@ -197,18 +212,15 @@ public class MediaPlayService extends Service {
     }
 
     /**
-     * 再生中かを取得する
+     * 再生状態を取得する
      * 
-     * @return 再生中の場合はtrue、そうでない場合はfalse
+     * @return 再生状態
+     * @see MediaPlayService#PLAY_STATE_IDLE
+     * @see MediaPlayService#PLAY_STATE_PREPARE
+     * @see MediaPlayService#PLAY_STATE_PLAYING
      */
-    public boolean isPlaying() {
-        synchronized (mLock) {
-            if (mMediaPlayer == null) {
-                return false;
-            }
-
-            return mMediaPlayer.isPlaying();
-        }
+    public int getPlayState() {
+        return mPlayState.getPlayState();
     }
 
     /**
@@ -325,6 +337,16 @@ public class MediaPlayService extends Service {
          * 停止
          */
         public void stop();
+
+        /**
+         * 再生状態を取得する
+         * 
+         * @return 再生状態
+         * @see MediaPlayService#PLAY_STATE_IDLE
+         * @see MediaPlayService#PLAY_STATE_PREPARE
+         * @see MediaPlayService#PLAY_STATE_PLAYING
+         */
+        public int getPlayState();
     }
     
     /**
@@ -344,6 +366,11 @@ public class MediaPlayService extends Service {
 
         @Override
         public void stop() {
+        }
+
+        @Override
+        public int getPlayState() {
+            return PLAY_STATE_IDLE;
         }
     }
     
@@ -434,6 +461,11 @@ public class MediaPlayService extends Service {
 
             changeState(new IdleState());
         }
+
+        @Override
+        public int getPlayState() {
+            return PLAY_STATE_PREPARE;
+        }
     }
 
     /**
@@ -479,6 +511,11 @@ public class MediaPlayService extends Service {
 
             changeState(new IdleState());
         }
+
+        @Override
+        public int getPlayState() {
+            return PLAY_STATE_PLAYING;
+        }
     }
 
     /**
@@ -500,6 +537,11 @@ public class MediaPlayService extends Service {
         @Override
         public String getPlayingPath() throws RemoteException {
             return MediaPlayService.this.getPlayingPath();
+        }
+
+        @Override
+        public int getPlayState() throws RemoteException {
+            return MediaPlayService.this.getPlayState();
         }
 
         @Override
