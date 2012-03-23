@@ -503,11 +503,6 @@ public class MediaPlayService extends Service {
         }
 
         @Override
-        public boolean isPlaying() throws RemoteException {
-            return MediaPlayService.this.isPlaying();
-        }
-
-        @Override
         public void registerPlayStateChangedCallback(
                 PlayStateChangedCallbackInterface callback)
                 throws RemoteException {

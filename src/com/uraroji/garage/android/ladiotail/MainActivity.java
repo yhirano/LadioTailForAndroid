@@ -418,7 +418,7 @@ public class MainActivity extends TabActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // 再生中のみに停止ボタンを有効にする
-        menu.findItem(MENU_ID_STOP).setEnabled(MediaPlayManager.getConnector().isPlaying());
+        menu.findItem(MENU_ID_STOP).setEnabled(MediaPlayManager.getConnector().getPlayingPath() != null);
 
         return super.onPrepareOptionsMenu(menu);
     }

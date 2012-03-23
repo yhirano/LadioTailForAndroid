@@ -162,7 +162,7 @@ public class MediaPlayServiceConnector {
             Log.v(C.TAG, "Release MediaPlay resouce.");
         }
 
-        boolean isPlayed = isPlaying();
+        final boolean isPlayed = (getPlayingPath() != null);
 
         mContext.unbindService(mMediaPlayServiceConn);
         // 再生中で無い場合はサービスを止める
@@ -190,27 +190,6 @@ public class MediaPlayServiceConnector {
             Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in getPlayingPath.");
             // どうしようもないのでとりあえずnullを返す
             return null;
-        }
-    }
-
-    /**
-     * 再生中かを取得する
-     * 
-     * @return 再生中の場合はtrue、そうでない場合はfalse
-     */
-    public boolean isPlaying() {
-        try {
-            if (mMediaPlayServiceInterface != null) {
-                return mMediaPlayServiceInterface.isPlaying();
-            } else {
-                Log.w(C.TAG, "Service interface is NULL in isPlaying.");
-                // どうしようもないのでとりあえずfalseを返す
-                return false;
-            }
-        } catch (RemoteException e) {
-            Log.w(C.TAG, "RemoteException(" + e.toString() + ") occurred in isPlaying.");
-            // どうしようもないのでとりあえずfalseを返す
-            return false;
         }
     }
 
