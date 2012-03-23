@@ -72,6 +72,16 @@ public class ChannelActivity extends Activity {
      */
     private Channel mChannel;
 
+    /**
+     * 再生状態変更時にボタンやテキストの表示を変更するためのHandler
+     */
+    private final Handler mSwitchPlayStopButtonTextHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switchPlayStopButtonText();
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -185,12 +195,14 @@ public class ChannelActivity extends Activity {
             }
         });
 
-        MediaPlayManager.getConnector().addPlayStateChangedHandler(new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                switchPlayStopButtonText();
-            }
-        });
+        MediaPlayManager.getConnector().addPlayStateChangedHandler(mSwitchPlayStopButtonTextHandler);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        MediaPlayManager.getConnector().removePlayStateChangedHandler(mSwitchPlayStopButtonTextHandler);
     }
 
     /**

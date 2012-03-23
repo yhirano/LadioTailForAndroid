@@ -97,6 +97,22 @@ public class MainActivity extends TabActivity {
      */
     private boolean isFetchAndUpdateHeadlineStartup = false;
 
+    /**
+     * 再生状態変更時にヘッドラインを更新するためのHandler
+     */
+    private final Handler mUpdateHeadlineHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            // 再生状態が変わったらリストを更新
+            updateHeadline();
+        }
+    };
+
+    /**
+     * 再生状態変更時にMenuの有効無効を切り替えるためのHandler
+     */
+    private Handler mMenuEnableSwitchHandler = null;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -316,13 +332,7 @@ public class MainActivity extends TabActivity {
         mDjListAdapter = new ChannelAdapter(this);
         djListView.setAdapter(mDjListAdapter);
 
-        MediaPlayManager.getConnector().addPlayStateChangedHandler(new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                // 再生状態が変わったらリストを更新
-                updateHeadline();
-            }
-        });
+        MediaPlayManager.getConnector().addPlayStateChangedHandler(mUpdateHeadlineHandler);
 
         isFetchAndUpdateHeadlineStartup = true;
     }
@@ -352,6 +362,9 @@ public class MainActivity extends TabActivity {
     protected void onDestroy() {
         super.onDestroy();
 
+        MediaPlayManager.getConnector().removePlayStateChangedHandler(mMenuEnableSwitchHandler);
+        MediaPlayManager.getConnector().removePlayStateChangedHandler(mUpdateHeadlineHandler);
+
         // 一応起動時にヘッドライン自動取得ができるようにしておく
         isFetchAndUpdateHeadlineStartup = true;
 
@@ -370,7 +383,7 @@ public class MainActivity extends TabActivity {
                 Menu.NONE, R.string.reload);
         reloadMenuItem.setIcon(R.drawable.ic_menu_reload);
 
-        MediaPlayManager.getConnector().addPlayStateChangedHandler(new Handler() {
+        mMenuEnableSwitchHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
@@ -383,7 +396,8 @@ public class MainActivity extends TabActivity {
                         break;
                 }
             }
-        });
+        };
+        MediaPlayManager.getConnector().addPlayStateChangedHandler(mMenuEnableSwitchHandler);
 
         return super.onCreateOptionsMenu(menu);
     }
