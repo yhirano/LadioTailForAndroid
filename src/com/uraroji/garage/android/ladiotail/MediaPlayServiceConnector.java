@@ -198,7 +198,7 @@ public class MediaPlayServiceConnector {
                 return mMediaPlayServiceInterface.isPlaying();
             } else {
                 Log.w(C.TAG, "Service interface is NULL in isPlaying.");
-                // どうしようもないのでとりあえずnullを返す
+                // どうしようもないのでとりあえずfalseを返す
                 return false;
             }
         } catch (RemoteException e) {
