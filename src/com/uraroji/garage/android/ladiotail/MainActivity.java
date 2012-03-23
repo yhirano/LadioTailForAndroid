@@ -481,6 +481,9 @@ public class MainActivity extends TabActivity {
      * 通信中のダイアログを表示させつつ、番組を取得し、取得後にヘッドラインリストの内容を更新する
      */
     private void fecthAndUpdateHeadline() {
+        // ヘッドラインリストのクリア
+        clearHeadline();
+        
         // 通信中ダイアログを表示する
         final ProgressDialog loadingDialog = new ProgressDialog(this);
         loadingDialog.setMessage(getString(R.string.now_loading));
@@ -571,6 +574,17 @@ public class MainActivity extends TabActivity {
                         Headline.SORT_TYPE_DJ, searchWord), playingPath);
     }
 
+    /**
+     * ヘッドラインリストの内容をクリアする
+     */
+    private void clearHeadline() {
+        // リストの更新
+        mNewlyListAdapter.clear();
+        mListenersListAdapter.clear();
+        mTitleListAdapter.clear();
+        mDjListAdapter.clear();
+    }
+    
     /**
      * 番組を再生する 再生前にはプログレス画面が表示され、再生が開始するとプログレス画面が消える。
      * 
@@ -899,6 +913,7 @@ public class MainActivity extends TabActivity {
          * 番組リストを更新する
          * 
          * @param channels 番組リスト
+         * @param playingPath 再生中のパス
          */
         /*package*/ void update(Channel[] channels, String playingPath) {
             if (channels == null) {
@@ -906,9 +921,18 @@ public class MainActivity extends TabActivity {
                         "channels is specified null.");
             }
 
-            this.mPlayingPath = playingPath;
-
+            mPlayingPath = playingPath;
             mChannelList = channels;
+
+            notifyDataSetChanged();
+        }
+
+        /**
+         * 番組リストをクリアする
+         */
+        /*package*/ void clear() {
+            mPlayingPath = null;
+            mChannelList = new Channel[0];
 
             notifyDataSetChanged();
         }
