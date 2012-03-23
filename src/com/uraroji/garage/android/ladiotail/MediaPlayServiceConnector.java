@@ -39,24 +39,29 @@ import java.util.ArrayList;
 public class MediaPlayServiceConnector {
 
     /**
+     * 再生準備開始メッセージ
+     */
+    public static final int MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED = 0;
+    
+    /**
      * 再生開始メッセージ
      */
-    public static final int MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED = 0;
+    public static final int MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED = 1;
 
     /**
      * 再生完了メッセージ
      */
-    public static final int MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED = 1;
+    public static final int MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED = 2;
 
     /**
      * 再生停止メッセージ
      */
-    public static final int MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED = 2;
+    public static final int MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED = 3;
 
     /**
      * 再生開始失敗メッセージ
      */
-    public static final int MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START = 3;
+    public static final int MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START = 4;
 
     /**
      * MediaPlayServiceへのインターフェース
@@ -71,6 +76,7 @@ public class MediaPlayServiceConnector {
     /**
      * 再生状態が変わった際のハンドラーリスト
      * 
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED
      * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED
      * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED
      * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED
@@ -211,6 +217,7 @@ public class MediaPlayServiceConnector {
     /**
      * 再生状態が変わった際にメッセージが受け取るハンドラーを登録する 再生状態が変わった際には、Handlerのwhatに変更後の状態が格納される。
      * 
+     * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED
      * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED
      * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED
      * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED
@@ -269,6 +276,9 @@ public class MediaPlayServiceConnector {
         @Override
         public void changed(int changedState) throws RemoteException {
             switch (changedState) {
+                case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PREPARE_STARTED:
+                    notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED);
+                    break;
                 case MediaPlayService.MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED:
                     notifyPlayStateChanged(MSG_MEDIA_PLAY_MANAGER_PLAY_STARTED);
                     break;

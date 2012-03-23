@@ -43,24 +43,29 @@ import java.io.IOException;
 public class MediaPlayService extends Service {
 
     /**
+     * 再生準備開始メッセージ
+     */
+    public static final int MSG_MEDIA_PLAY_SERVICE_PREPARE_STARTED = 0;
+    
+    /**
      * 再生開始メッセージ
      */
-    public static final int MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED = 0;
+    public static final int MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED = 1;
 
     /**
      * 再生完了メッセージ
      */
-    public static final int MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED = 1;
+    public static final int MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED = 2;
 
     /**
      * 再生停止メッセージ
      */
-    public static final int MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED = 2;
+    public static final int MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED = 3;
 
     /**
      * 再生開始失敗メッセージ
      */
-    public static final int MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START = 3;
+    public static final int MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START = 4;
 
     /**
      * Media player
@@ -68,7 +73,7 @@ public class MediaPlayService extends Service {
     private MediaPlayer mMediaPlayer;
 
     /**
-     * 再生中のパス。再生していない場合はnull。
+     * 準備中・再生中のパス。停止中の場合はnull。
      */
     private String mPlayingPath;
 
@@ -181,9 +186,9 @@ public class MediaPlayService extends Service {
     }
 
     /**
-     * 再生中のパスを取得する
+     * 準備中・再生中のパスを取得する
      * 
-     * @return 再生中のパス。再生していない場合はnull。
+     * @return 準備中・再生中のパス。停止中の場合はnull。
      */
     public String getPlayingPath() {
         synchronized (mLock) {
@@ -210,6 +215,7 @@ public class MediaPlayService extends Service {
      * 再生状態が変化したので、登録済みのコールバックを実行する。
      * 
      * @param changedState 変化後の状態
+     * @see MediaPlayService#MSG_MEDIA_PLAY_SERVICE_PREPARE_STARTED
      * @see MediaPlayService#MSG_MEDIA_PLAY_SERVICE_PLAY_STARTED
      * @see MediaPlayService#MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED
      * @see MediaPlayService#MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED
@@ -273,14 +279,14 @@ public class MediaPlayService extends Service {
                 nm.notify(C.NOTIFICATION_ID, n);
                 break;
             }
+            case MSG_MEDIA_PLAY_SERVICE_PREPARE_STARTED:
             case MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED:
             case MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED:
-            case MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START: {
+            case MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START:
                 // 再生中ではないのでNotificationを消す
                 NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 nm.cancel(C.NOTIFICATION_ID);
                 break;
-            }
             default:
                 break;
         }
@@ -361,6 +367,7 @@ public class MediaPlayService extends Service {
         public void init() {
             synchronized (mLock) {
                 try {
+                    notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PREPARE_STARTED);
                     mMediaPlayer.setDataSource(mmPath);
                     mMediaPlayer.setOnPreparedListener(new OnPreparedListener() {
 
@@ -368,7 +375,6 @@ public class MediaPlayService extends Service {
                         public void onPrepared(MediaPlayer mp) {
                             synchronized (mLock) {
                                 mMediaPlayer.start();
-                                mPlayingPath = mmPath;
                                 mNotificationTitle = mmNotificationTitle;
                                 mNotificationContent = mmNotificationContent;
                             }
@@ -377,6 +383,7 @@ public class MediaPlayService extends Service {
                         }
                     });
                     mMediaPlayer.prepareAsync();
+                    mPlayingPath = mmPath;
                 } catch (IOException e) {
                     Log.i(C.TAG, "MediaPlayer occurred IOException(" + e.toString()
                             + ").");

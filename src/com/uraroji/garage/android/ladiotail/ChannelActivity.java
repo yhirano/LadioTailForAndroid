@@ -236,6 +236,7 @@ public class ChannelActivity extends Activity {
                                     R.string.failed_play_message, Toast.LENGTH_LONG)
                                     .show();
                             break;
+                        case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PREPARE_STARTED:
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_COMPLATED:
                         case MediaPlayServiceConnector.MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED:
                             break;
