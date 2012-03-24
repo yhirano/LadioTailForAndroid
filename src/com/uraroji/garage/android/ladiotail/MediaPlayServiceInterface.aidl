@@ -54,6 +54,11 @@ interface MediaPlayServiceInterface {
      */
     String getPlayingPath();
 
+    /**
+     * 再生状態を取得する
+     * 
+     * @return 再生状態
+     */
     int getPlayState();
 
     /**
