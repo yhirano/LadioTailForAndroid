@@ -182,6 +182,8 @@ public class MediaPlayService extends Service {
                                     mp.reset();
                                 }
                                 notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_COMPLATED);
+
+                                changeState(new IdleState());
                             }
                         });
             }
