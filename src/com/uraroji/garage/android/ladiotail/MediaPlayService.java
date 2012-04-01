@@ -418,8 +418,8 @@ public class MediaPlayService extends Service {
                     });
                     mMediaPlayer.prepareAsync();
                     mPlayingPath = mmPath;
-                } catch (IOException e) {
-                    Log.i(C.TAG, "MediaPlayer occurred IOException(" + e.toString()
+                } catch (Exception e) {
+                    Log.i(C.TAG, "MediaPlayer occurred Exception(" + e.toString()
                             + ").");
                     mPlayingPath = null;
                     mNotificationTitle = null;
