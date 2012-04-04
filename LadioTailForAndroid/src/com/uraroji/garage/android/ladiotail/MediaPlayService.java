@@ -37,6 +37,8 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 
+import java.io.IOException;
+
 /**
  * メディア再生サービス
  */
@@ -418,9 +420,18 @@ public class MediaPlayService extends Service {
                     });
                     mMediaPlayer.prepareAsync();
                     mPlayingPath = mmPath;
-                } catch (Exception e) {
-                    Log.i(C.TAG, "MediaPlayer occurred Exception(" + e.toString()
+                } catch (IllegalStateException e) {
+                    mMediaPlayer.setOnPreparedListener(null);
+                    mPlayingPath = null;
+                    mNotificationTitle = null;
+                    mNotificationContent = null;
+                    mMediaPlayer.reset();
+                    notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START);
+                    changeState(new IdleState());
+                } catch (IOException e) {
+                    Log.i(C.TAG, "MediaPlayer occurred IOException(" + e.toString()
                             + ").");
+                    mMediaPlayer.setOnPreparedListener(null);
                     mPlayingPath = null;
                     mNotificationTitle = null;
                     mNotificationContent = null;
@@ -441,7 +452,11 @@ public class MediaPlayService extends Service {
             synchronized (mLock) {
                 try {
                     mMediaPlayer.setDataSource(new String());
-                } catch (Exception e) {
+                } catch (IllegalStateException e) {
+                    mMediaPlayer.reset();
+                } catch (IOException e) {
+                    Log.i(C.TAG, "MediaPlayer occurred IOException(" + e.toString()
+                            + ").");
                     mMediaPlayer.reset();
                 }
                 mMediaPlayer.setOnPreparedListener(null);
