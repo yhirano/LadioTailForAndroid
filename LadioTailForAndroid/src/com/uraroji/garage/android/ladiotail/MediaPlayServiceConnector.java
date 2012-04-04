@@ -107,12 +107,12 @@ public class MediaPlayServiceConnector {
      * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_PLAY_STOPPED
      * @see MediaPlayServiceConnector#MSG_MEDIA_PLAY_MANAGER_FAILD_PLAY_START
      */
-    private ArrayList<Handler> mPlayStateChangedHandlerist = new ArrayList<Handler>();
+    private ArrayList<Handler> mPlayStateChangedHandlerList = new ArrayList<Handler>();
 
     /**
-     * mPlayStateChangedHandleristのロックオブジェクト
+     * {@link MediaPlayServiceConnector#mPlayStateChangedHandlerList}のロックオブジェクト
      */
-    private final Object mPlayStateChangedHandleristLock = new Object();
+    private final Object mPlayStateChangedHandlerListLock = new Object();
 
     /**
      * 初期化
@@ -257,9 +257,9 @@ public class MediaPlayServiceConnector {
      * @param handler 登録するハンドラ
      */
     public void addPlayStateChangedHandler(Handler handler) {
-        synchronized (mPlayStateChangedHandleristLock) {
+        synchronized (mPlayStateChangedHandlerListLock) {
             if (handler != null) {
-                mPlayStateChangedHandlerist.add(handler);
+                mPlayStateChangedHandlerList.add(handler);
             }
         }
     }
@@ -271,8 +271,8 @@ public class MediaPlayServiceConnector {
      * @see addPlayStateChangedHandler
      */
     public void removePlayStateChangedHandler(Handler handler) {
-        synchronized (mPlayStateChangedHandleristLock) {
-            mPlayStateChangedHandlerist.remove(handler);
+        synchronized (mPlayStateChangedHandlerListLock) {
+            mPlayStateChangedHandlerList.remove(handler);
         }
     }
 
@@ -296,8 +296,8 @@ public class MediaPlayServiceConnector {
      */
     @SuppressWarnings("unchecked")
     private ArrayList<Handler> getPlayStateChangedHandleristClone() {
-        synchronized (mPlayStateChangedHandleristLock) {
-            return (ArrayList<Handler>) mPlayStateChangedHandlerist.clone();
+        synchronized (mPlayStateChangedHandlerListLock) {
+            return (ArrayList<Handler>) mPlayStateChangedHandlerList.clone();
         }
     }
 
