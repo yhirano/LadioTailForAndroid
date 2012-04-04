@@ -27,6 +27,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -400,6 +401,7 @@ public class MediaPlayService extends Service {
             synchronized (mLock) {
                 try {
                     notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PREPARE_STARTED);
+                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     mMediaPlayer.setDataSource(mmPath);
                     mMediaPlayer.setOnPreparedListener(new OnPreparedListener() {
 
