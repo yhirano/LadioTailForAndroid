@@ -36,8 +36,6 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 
-import java.io.IOException;
-
 /**
  * メディア再生サービス
  */
