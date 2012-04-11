@@ -493,7 +493,7 @@ public class MainActivity extends TabActivity {
             @Override
             public void run() {
                 try {
-                    HeadlineManager.getHeadline().fecthHeadline();
+                    HeadlineManager.getHeadline().fetchHeadline();
 
                     // 読み込み終了の通知
                     mmHandler.sendEmptyMessage(MSG_FETCHED_HEADLINE);
