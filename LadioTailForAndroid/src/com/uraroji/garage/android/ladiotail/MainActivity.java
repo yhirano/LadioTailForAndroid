@@ -60,7 +60,6 @@ import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.uraroji.garage.android.ladiotail.bugreport.AppUncaughtExceptionHandler;
 import com.uraroji.garage.android.netladiolib.Channel;
 import com.uraroji.garage.android.netladiolib.Headline;
 import com.uraroji.garage.android.netladiolib.HeadlineManager;
@@ -122,10 +121,6 @@ public class MainActivity extends TabActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         setContentView(R.layout.main);
-
-        // 補足されない例外をキャッチするハンドラを登録（バグレポート用）
-        Thread.setDefaultUncaughtExceptionHandler(new AppUncaughtExceptionHandler(
-                this));
 
         // 再生管理の初期化
         MediaPlayManager.getConnector().init(getApplicationContext());
@@ -338,9 +333,6 @@ public class MainActivity extends TabActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
-        // 前回バグで強制終了した場合はダイアログ表示
-        AppUncaughtExceptionHandler.showBugReportDialogIfExist();
 
         /*
          * ヘッドラインが未取得の場合にのみヘッドラインをネットから取得する。
