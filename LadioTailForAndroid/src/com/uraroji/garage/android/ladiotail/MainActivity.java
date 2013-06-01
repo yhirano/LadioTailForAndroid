@@ -29,7 +29,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -61,6 +60,10 @@ import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
 import com.uraroji.garage.android.netladiolib.Channel;
 import com.uraroji.garage.android.netladiolib.Headline;
 import com.uraroji.garage.android.netladiolib.HeadlineManager;
@@ -82,6 +85,14 @@ public class MainActivity extends TabActivity {
 
     private EditText mSearchEditText;
 
+    private PullToRefreshListView mNewlyPullToRefreshListView;
+
+    private PullToRefreshListView mListenersPullToRefreshListView;
+
+    private PullToRefreshListView mTitlePullToRefreshListView;
+
+    private PullToRefreshListView mDjPullToRefreshListView;
+
     private ChannelAdapter mNewlyListAdapter;
 
     private ChannelAdapter mListenersListAdapter;
@@ -89,6 +100,11 @@ public class MainActivity extends TabActivity {
     private ChannelAdapter mTitleListAdapter;
 
     private ChannelAdapter mDjListAdapter;
+
+    /**
+     * ヘッドラインアップデート中かを示すフラグ
+     */
+    private boolean mIsHeadlineUpdating = false;
 
     /**
      * 起動時にヘッドラインを取得しに行くかを管理するフラグ。 諸事情によりonCreateでヘッドラインを取得できなくなったので、
@@ -310,28 +326,64 @@ public class MainActivity extends TabActivity {
         };
 
         // Newly list
-        ListView newlyListView = (ListView) findViewById(R.id.NewlyListView);
+        mNewlyPullToRefreshListView = (PullToRefreshListView) findViewById(R.id.NewlyListView);
+        mNewlyPullToRefreshListView.setOnRefreshListener(new OnRefreshListener<ListView>() {
+
+			@Override
+			public void onRefresh(PullToRefreshBase<ListView> refreshView) {
+				// ヘッドライン更新
+				MainActivity.this.fecthAndUpdateHeadline();
+			}
+		});
+        ListView newlyListView = mNewlyPullToRefreshListView.getRefreshableView();
         newlyListView.setOnItemClickListener(channelClickListener);
         newlyListView.setOnItemLongClickListener(channelLongClickListener);
         mNewlyListAdapter = new ChannelAdapter(this);
         newlyListView.setAdapter(mNewlyListAdapter);
 
         // Listeners list
-        ListView listenersListView = (ListView) findViewById(R.id.ListenersListView);
+        mListenersPullToRefreshListView = (PullToRefreshListView) findViewById(R.id.ListenersListView);
+        mListenersPullToRefreshListView.setOnRefreshListener(new OnRefreshListener<ListView>() {
+
+			@Override
+			public void onRefresh(PullToRefreshBase<ListView> refreshView) {
+				// ヘッドライン更新
+				MainActivity.this.fecthAndUpdateHeadline();
+			}
+		});
+        ListView listenersListView = mListenersPullToRefreshListView.getRefreshableView();
         listenersListView.setOnItemClickListener(channelClickListener);
         listenersListView.setOnItemLongClickListener(channelLongClickListener);
         mListenersListAdapter = new ChannelAdapter(this);
         listenersListView.setAdapter(mListenersListAdapter);
 
         // Title list
-        ListView titleListView = (ListView) findViewById(R.id.TitleListView);
+        mTitlePullToRefreshListView = (PullToRefreshListView) findViewById(R.id.TitleListView);
+        mTitlePullToRefreshListView.setOnRefreshListener(new OnRefreshListener<ListView>() {
+
+			@Override
+			public void onRefresh(PullToRefreshBase<ListView> refreshView) {
+				// ヘッドライン更新
+				MainActivity.this.fecthAndUpdateHeadline();
+			}
+		});
+        ListView titleListView = mTitlePullToRefreshListView.getRefreshableView();
         titleListView.setOnItemClickListener(channelClickListener);
         titleListView.setOnItemLongClickListener(channelLongClickListener);
         mTitleListAdapter = new ChannelAdapter(this);
         titleListView.setAdapter(mTitleListAdapter);
 
         // DJ list
-        ListView djListView = (ListView) findViewById(R.id.DjListView);
+        mDjPullToRefreshListView = (PullToRefreshListView) findViewById(R.id.DjListView);
+        mDjPullToRefreshListView.setOnRefreshListener(new OnRefreshListener<ListView>() {
+
+			@Override
+			public void onRefresh(PullToRefreshBase<ListView> refreshView) {
+				// ヘッドライン更新
+				MainActivity.this.fecthAndUpdateHeadline();
+			}
+		});
+        ListView djListView = mDjPullToRefreshListView.getRefreshableView();
         djListView.setOnItemClickListener(channelClickListener);
         djListView.setOnItemLongClickListener(channelLongClickListener);
         mDjListAdapter = new ChannelAdapter(this);
@@ -411,6 +463,12 @@ public class MainActivity extends TabActivity {
                 break;
         }
 
+        if (mIsHeadlineUpdating == true) {
+            menu.findItem(MENU_ID_RELOAD).setEnabled(false);
+        } else {
+            menu.findItem(MENU_ID_RELOAD).setEnabled(true);
+        }
+        
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -475,7 +533,20 @@ public class MainActivity extends TabActivity {
      * 通信中のダイアログを表示させつつ、番組を取得し、取得後にヘッドラインリストの内容を更新する
      */
     private void fecthAndUpdateHeadline() {
-        // ヘッドラインリストのクリア
+    	// アップデート中の場合は何もしない
+    	if (mIsHeadlineUpdating) {
+    		return;
+    	}
+        // アップデート中フラグを上げる
+        mIsHeadlineUpdating = true;
+
+    	// 更新中はPull down to refreshを無効にする
+    	mNewlyPullToRefreshListView.setMode(Mode.DISABLED);
+		mListenersPullToRefreshListView.setMode(Mode.DISABLED);
+		mTitlePullToRefreshListView.setMode(Mode.DISABLED);
+		mDjPullToRefreshListView.setMode(Mode.DISABLED);
+
+		// ヘッドラインリストのクリア
         clearHeadline();
         
         // タイトルバーのプログレスアイコンを表示する
@@ -514,14 +585,10 @@ public class MainActivity extends TabActivity {
                         case MSG_FETCHED_HEADLINE:
                             // ヘッドラインリストの内容を更新する
                             updateHeadline();
-                            // タイトルバーのプログレスアイコンを表示を消す
-                            setProgressBarIndeterminateVisibility(false);
                             break;
                         case MSG_FAILED_FETCH_HEADLINE:
                             // ヘッドラインリストの内容を更新する
                             updateHeadline();
-                            // タイトルバーのプログレスアイコンを表示を消す
-                            setProgressBarIndeterminateVisibility(false);
                             // 失敗した旨のメッセージを出す
                             Toast.makeText(MainActivity.this,
                                     R.string.failed_fetch_headline,
@@ -531,11 +598,33 @@ public class MainActivity extends TabActivity {
                             Log.w(C.TAG, String.format(
                                     "Unknown mesasge(%d) from fetch handler.",
                                     msg.what));
-                            // タイトルバーのプログレスアイコンを表示を消す
-                            setProgressBarIndeterminateVisibility(false);
                             break;
                     }
+
+                    // タイトルバーのプログレスアイコンを表示を消す
+                    setProgressBarIndeterminateVisibility(false);
+                    // Pull down to refresh終了
+                    completePullDownRefresh();
+                    
+                    // アップデート中フラグを下げる
+                    mIsHeadlineUpdating = false;
                 }
+
+                /**
+                 * Pull down to refresh完了
+                 */
+				private void completePullDownRefresh() {
+					// Pull down to refresh終了
+					mNewlyPullToRefreshListView.onRefreshComplete();
+					mListenersPullToRefreshListView.onRefreshComplete();
+					mTitlePullToRefreshListView.onRefreshComplete();
+					mDjPullToRefreshListView.onRefreshComplete();
+					// Pull down to refreshを有効にする
+					mNewlyPullToRefreshListView.setMode(Mode.PULL_FROM_START);
+					mListenersPullToRefreshListView.setMode(Mode.PULL_FROM_START);
+					mTitlePullToRefreshListView.setMode(Mode.PULL_FROM_START);
+					mDjPullToRefreshListView.setMode(Mode.PULL_FROM_START);
+				}
             };
         }.start();
     }
@@ -789,9 +878,9 @@ public class MainActivity extends TabActivity {
 
                 Resources res = getResources();
 				if (position % 2 == 0) {
-					view.setBackgroundColor(res.getColor(R.color.headline_table_cell_background_color_dark));
-				} else {
 					view.setBackgroundColor(res.getColor(R.color.headline_table_cell_background_color_light));
+				} else {
+					view.setBackgroundColor(res.getColor(R.color.headline_table_cell_background_color_dark));
 				}
                 
                 final Channel CHANNEL = (Channel) getItem(position);

@@ -41,33 +41,29 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" >
 
-            <ListView
+            <com.handmark.pulltorefresh.library.PullToRefreshListView
                 android:id="@+id/NewlyListView"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_weight="1" >
-            </ListView>
+                android:layout_weight="1" />
 
-            <ListView
+            <com.handmark.pulltorefresh.library.PullToRefreshListView
                 android:id="@+id/ListenersListView"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_weight="1" >
-            </ListView>
+                android:layout_weight="1" />
 
-            <ListView
+            <com.handmark.pulltorefresh.library.PullToRefreshListView
                 android:id="@+id/TitleListView"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_weight="1" >
-            </ListView>
+                android:layout_weight="1" />
 
-            <ListView
+            <com.handmark.pulltorefresh.library.PullToRefreshListView
                 android:id="@+id/DjListView"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_weight="1" >
-            </ListView>
+                android:layout_weight="1" />
         </FrameLayout>
     </LinearLayout>
 

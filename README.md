@@ -26,6 +26,10 @@ THE SOFTWARE.
 
 Ladio Tail for Androidには下記のリソースが含まれています。
 
+### ソースコード
+
+* [Pull To Refresh Views for Android](https://github.com/chrisbanes/Android-PullToRefresh) - Apache License Version 2.0
+
 ### アイコン
 
 * [Gentleface Toolbar Icon Set](http://www.gentleface.com/free_icon_set.html) - The Creative Commons Attribution-NonCommercial
