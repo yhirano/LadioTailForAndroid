@@ -251,18 +251,29 @@ public class MainActivity extends TabActivity {
                     }
                 } else if (selectedItem instanceof Channel) {
                     if (C.LOCAL_LOG) {
-                        Log.v(C.TAG,
-                                String.format("Clicked %s item.",
-                                        selectedItem.toString()));
+						Log.v(C.TAG,
+								String.format("Clicked %s item.",
+										selectedItem.toString()));
                     }
-                    // 再生
-                    play((Channel) selectedItem);
+                    
+                    Channel selectedChanel = (Channel) selectedItem;
+                    final String playingPath = MediaPlayManager.getConnector().getPlayingPath(); 
+                    
+                    // 再生中のURLと番組のURLが同じ場合に再生中とする
+                    if (selectedChanel.getPlayUrl() != null
+                            && selectedChanel.getPlayUrl().toString().equals(playingPath)) {
+                    	stop();
+                    } else {
+                        // 再生していない場合は再生
+                        play(selectedChanel);
+					}
                 } else {
                     Log.w(C.TAG, String.format("Clicked unknown %s item.",
                             selectedItem.toString()));
                 }
             }
         };
+
         // 番組を長押しした際の処理
         OnItemLongClickListener channelLongClickListener = new OnItemLongClickListener() {
             @Override
@@ -852,7 +863,7 @@ public class MainActivity extends TabActivity {
                         
                         holder.channelDateTextView.setText(dateStr);
                     }
-                }else{
+				} else {
                     holder.channelDateTextView.setText("");
                 }
                 
