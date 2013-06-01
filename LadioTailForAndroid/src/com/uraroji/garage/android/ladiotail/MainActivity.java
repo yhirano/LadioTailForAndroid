@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -775,6 +776,13 @@ public class MainActivity extends TabActivity {
                     view.setTag(holder);
                 }
 
+                Resources res = getResources();
+				if (position % 2 == 0) {
+					view.setBackgroundColor(res.getColor(R.color.headline_table_cell_background_color_dark));
+				} else {
+					view.setBackgroundColor(res.getColor(R.color.headline_table_cell_background_color_light));
+				}
+                
                 final Channel CHANNEL = (Channel) getItem(position);
 
                 final String TITLE = CHANNEL.getNam();

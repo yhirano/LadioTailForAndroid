@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="headline_table_cell_background_color_dark">#282828</color>
+    <color name="headline_table_cell_background_color_light">#3C3C3c</color>
+
+</resources>
