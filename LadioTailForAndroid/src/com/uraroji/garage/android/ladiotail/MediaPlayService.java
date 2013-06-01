@@ -364,6 +364,10 @@ public class MediaPlayService extends Service {
 
         @Override
         public void init() {
+        	if (mMediaPlayer != null) {
+        		mMediaPlayer.release();
+        		mMediaPlayer = null;
+        	}
         }
 
         @Override
@@ -403,6 +407,12 @@ public class MediaPlayService extends Service {
             synchronized (mLock) {
                 try {
                     notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PREPARE_STARTED);
+                    // trueになることはないはず
+                    if (mMediaPlayer != null) {
+                    	mMediaPlayer.release();
+                    	mMediaPlayer = null;
+                    }
+                	mMediaPlayer = new MediaPlayer();
                     mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     mMediaPlayer.setDataSource(mmPath);
                     mMediaPlayer.setOnPreparedListener(new OnPreparedListener() {
@@ -422,20 +432,22 @@ public class MediaPlayService extends Service {
                     mPlayingPath = mmPath;
                 } catch (IllegalStateException e) {
                     mMediaPlayer.setOnPreparedListener(null);
+                    mMediaPlayer.release();
+                    mMediaPlayer = null;
                     mPlayingPath = null;
                     mNotificationTitle = null;
                     mNotificationContent = null;
-                    mMediaPlayer.reset();
                     notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START);
                     changeState(new IdleState());
                 } catch (IOException e) {
                     Log.i(C.TAG, "MediaPlayer occurred IOException(" + e.toString()
                             + ").");
                     mMediaPlayer.setOnPreparedListener(null);
+                    mMediaPlayer.release();
+                    mMediaPlayer = null;
                     mPlayingPath = null;
                     mNotificationTitle = null;
                     mNotificationContent = null;
-                    mMediaPlayer.reset();
                     notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_FAILD_PLAY_START);
                     changeState(new IdleState());
                 }
@@ -450,16 +462,9 @@ public class MediaPlayService extends Service {
                 return;
             }
             synchronized (mLock) {
-                try {
-                    mMediaPlayer.setDataSource(new String());
-                } catch (IllegalStateException e) {
-                    mMediaPlayer.reset();
-                } catch (IOException e) {
-                    Log.i(C.TAG, "MediaPlayer occurred IOException(" + e.toString()
-                            + ").");
-                    mMediaPlayer.reset();
-                }
                 mMediaPlayer.setOnPreparedListener(null);
+                mMediaPlayer.release();
+                mMediaPlayer = null;
                 mPlayingPath = null;
                 mNotificationTitle = null;
                 mNotificationContent = null;
@@ -472,12 +477,12 @@ public class MediaPlayService extends Service {
         @Override
         public void stop() {
             synchronized (mLock) {
-                mMediaPlayer.stop();
                 mMediaPlayer.setOnPreparedListener(null);
+                mMediaPlayer.release();
+                mMediaPlayer = null;
                 mPlayingPath = null;
                 mNotificationTitle = null;
                 mNotificationContent = null;
-                mMediaPlayer.reset();
             }
             notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
 
@@ -509,10 +514,11 @@ public class MediaPlayService extends Service {
             synchronized (mLock) {
                 mMediaPlayer.stop();
                 mMediaPlayer.setOnPreparedListener(null);
+                mMediaPlayer.release();
+                mMediaPlayer = null;
                 mPlayingPath = null;
                 mNotificationTitle = null;
                 mNotificationContent = null;
-                mMediaPlayer.reset();
             }
             notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
 
@@ -524,10 +530,11 @@ public class MediaPlayService extends Service {
             synchronized (mLock) {
                 mMediaPlayer.stop();
                 mMediaPlayer.setOnPreparedListener(null);
+                mMediaPlayer.release();
+                mMediaPlayer = null;
                 mPlayingPath = null;
                 mNotificationTitle = null;
                 mNotificationContent = null;
-                mMediaPlayer.reset();
             }
             notifyPlayStateChanged(MSG_MEDIA_PLAY_SERVICE_PLAY_STOPPED);
 
